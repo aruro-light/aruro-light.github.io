@@ -1,0 +1,3406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="星空下的个人主页：夜晚草地、小女孩、黄色小狗，以及可以点击的星星。A personal portfolio under a starry night sky.">
+  <meta name="theme-color" content="#07101f">
+  <title>Hello Friends! | 星空下的个人主页</title>
+
+  <!--
+    ================================================================
+    NIGHT MEADOW PORTFOLIO · 单文件个人主页
+    - 所有样式、脚本与插画均为内联，无外部依赖
+    - 中英文通过 body 的 .lang-en 类切换
+    - 插画热区全部使用百分比定位，集中在 CSS「插画热区」区块
+    - 项目数据集中在 JS 的 projects 对象中
+    - 搜索「【待填】」可找到需要替换的姓名与联系方式
+    ================================================================
+  -->
+
+  <style>
+    /* ============================================================
+       01. 设计变量与基础样式
+       ============================================================ */
+    :root {
+      --night-950: #050b18;
+      --night-900: #081222;
+      --night-800: #0e1a2e;
+      --night-700: #16263f;
+      --ink: #172033;
+      --ink-soft: #4d5a70;
+      --ink-muted: #7a8496;
+      --cream: #f7f3ea;
+      --cream-2: #efe8da;
+      --paper: #fffdf8;
+      --line: rgba(23, 32, 51, 0.12);
+      --line-dark: rgba(247, 243, 234, 0.13);
+      --yellow: #f2c45f;
+      --yellow-soft: #f8e7b8;
+      --yellow-deep: #b77c17;
+      --blue: #8fa8df;
+      --blue-soft: #e4ebf8;
+      --rose-soft: #f2ddd6;
+      --mint-soft: #deebe1;
+      --container: 1150px;
+      --radius-lg: 26px;
+      --radius-md: 20px;
+      --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
+        Palatino, Georgia, "Songti SC", "STSong", serif;
+      --font-sans: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont,
+        "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+        "Noto Sans SC", sans-serif;
+      --font-mono: "SFMono-Regular", "Cascadia Code", "Roboto Mono", Consolas,
+        "Liberation Mono", monospace;
+
+      /* 插画比例：1500 × 1000 = 3 : 2。替换插画时同步修改这里与 SVG。 */
+      --scene-aspect: 1.5;
+      color-scheme: light;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 20px;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    img,
+    svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    ::selection {
+      background: rgba(242, 196, 95, 0.42);
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--yellow-deep);
+      outline-offset: 4px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .nowrap {
+      white-space: nowrap;
+    }
+
+    .skip-link {
+      position: fixed;
+      top: -90px;
+      left: 18px;
+      z-index: 300;
+      padding: 10px 14px;
+      border-radius: 9px;
+      background: var(--yellow);
+      color: var(--night-950);
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: top 0.2s ease;
+    }
+
+    .skip-link:focus {
+      top: 14px;
+    }
+
+    /* 语言切换：默认中文；body.lang-en 时显示英文 */
+    .lang-en-text {
+      display: none;
+    }
+
+    body.lang-en .lang-zh {
+      display: none;
+    }
+
+    body.lang-en .lang-en-text {
+      display: inline;
+    }
+
+    /* ============================================================
+       02. 固定语言按钮
+       ============================================================ */
+    .lang-toggle {
+      position: fixed;
+      top: max(16px, env(safe-area-inset-top));
+      right: max(16px, env(safe-area-inset-right));
+      z-index: 200;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: 72px;
+      height: 40px;
+      padding: 0 14px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 999px;
+      background: rgba(6, 13, 27, 0.72);
+      color: #fff8e8;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      backdrop-filter: blur(16px) saturate(140%);
+      box-shadow: 0 14px 34px -20px rgba(0, 0, 0, 0.9);
+      cursor: pointer;
+      transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        background-color 0.25s ease;
+    }
+
+    .lang-toggle:hover {
+      border-color: rgba(242, 196, 95, 0.62);
+      background: rgba(17, 30, 50, 0.9);
+      transform: translateY(-1px);
+    }
+
+    .lang-toggle svg {
+      width: 15px;
+      height: 15px;
+      flex: 0 0 auto;
+    }
+
+    /* ============================================================
+       03. Hero：全屏夜晚草地图
+       ============================================================ */
+    .hero {
+      position: relative;
+      isolation: isolate;
+      height: 100vh;
+      height: 100svh;
+      overflow: hidden;
+      background: var(--night-950);
+    }
+
+    /*
+      插画容器使用「cover」的方式铺满首屏：
+      - 如果屏幕比 3:2 更宽，画面按高度铺满，左右裁切；
+      - 如果屏幕比 3:2 更窄，画面按宽度铺满，上下裁切。
+      热区均以这个 .artboard 为百分比基准，因而会跟随画面一起缩放。
+    */
+    .artboard {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100vw, 150vh);
+      aspect-ratio: 3 / 2;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+    }
+
+    @supports (height: 100svh) {
+      .artboard {
+        width: max(100vw, 150svh);
+      }
+    }
+
+    .scene-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 首屏顶部与底部的柔和暗角，让文字更清晰 */
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background:
+        linear-gradient(180deg, rgba(3, 8, 18, 0.56) 0%, transparent 30%),
+        linear-gradient(0deg, rgba(3, 8, 18, 0.45) 0%, transparent 24%);
+      pointer-events: none;
+    }
+
+    .hero-copy {
+      position: absolute;
+      top: clamp(72px, 10vh, 108px);
+      left: 50%;
+      z-index: 6;
+      width: min(860px, calc(100% - 40px));
+      text-align: center;
+      pointer-events: none;
+      transform: translateX(-50%);
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 17px;
+      color: rgba(255, 246, 224, 0.8);
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: hero-rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.12s forwards;
+    }
+
+    .hero-eyebrow::before,
+    .hero-eyebrow::after {
+      content: "";
+      width: 24px;
+      height: 1px;
+      background: rgba(255, 238, 189, 0.4);
+    }
+
+    .hello {
+      color: #fff8e9;
+      font-family: var(--font-display);
+      font-size: clamp(3.4rem, 8.5vw, 7.1rem);
+      font-weight: 500;
+      letter-spacing: -0.055em;
+      line-height: 0.94;
+      text-shadow: 0 16px 50px rgba(0, 0, 0, 0.42);
+      opacity: 0;
+      animation: hero-rise 1.15s cubic-bezier(0.2, 0.7, 0.2, 1) 0.28s forwards;
+    }
+
+    .hello em {
+      color: var(--yellow);
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    .hero-sub {
+      max-width: 600px;
+      margin: 22px auto 0;
+      color: rgba(255, 247, 232, 0.8);
+      font-size: clamp(0.88rem, 1.35vw, 1rem);
+      line-height: 1.85;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+      text-wrap: balance;
+      opacity: 0;
+      animation: hero-rise 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.65s forwards;
+    }
+
+    @keyframes hero-rise {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ------------------------------------------------------------
+       插画热区（调整位置时，只改这里的百分比即可）
+       百分比相对于 .artboard
+       ------------------------------------------------------------ */
+    .hotspot {
+      position: absolute;
+      z-index: 4;
+      display: block;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hotspot:focus-visible {
+      outline: 2px dashed rgba(255, 244, 205, 0.95);
+      outline-offset: 6px;
+    }
+
+    /* 小女孩 */
+    .hotspot-girl {
+      left: 35.8%;
+      top: 54.5%;
+      width: 14.8%;
+      height: 37.5%;
+      border-radius: 44% 44% 22% 22%;
+    }
+
+    /* 黄色小狗 */
+    .hotspot-dog {
+      left: 50.6%;
+      top: 66.8%;
+      width: 15.2%;
+      height: 25%;
+      border-radius: 50% 50% 28% 28%;
+    }
+
+    /* 草地：覆盖画面底部，角色热区层级更高 */
+    .hotspot-grass {
+      left: 0;
+      bottom: 0;
+      z-index: 3;
+      width: 100%;
+      height: 16%;
+      border-radius: 0;
+    }
+
+    /*
+      三颗可点击的星星。
+      若调整它们的 left/top，记得同步移动 SVG 中对应的星座线端点，
+      否则星点与虚线会错位。
+    */
+    .star-hotspot {
+      left: 0;
+      top: 0;
+      z-index: 7;
+      display: grid;
+      width: 5.3%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      place-items: center;
+      transform: translate(-50%, -50%);
+    }
+
+    .star-1 {
+      left: 42%;
+      top: 36%;
+    }
+
+    .star-2 {
+      left: 50%;
+      top: 42%;
+    }
+
+    .star-3 {
+      left: 58%;
+      top: 37.5%;
+    }
+
+    .star-hotspot::before {
+      content: "";
+      position: absolute;
+      inset: 4%;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        rgba(255, 227, 142, 0.36) 0%,
+        rgba(255, 218, 117, 0.1) 38%,
+        transparent 70%
+      );
+      animation: star-halo 3.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .star-2::before {
+      animation-delay: 1.1s;
+    }
+
+    .star-3::before {
+      animation-delay: 2.2s;
+    }
+
+    .star-icon {
+      position: relative;
+      z-index: 1;
+      width: 54%;
+      height: 54%;
+      margin: auto;
+      filter: drop-shadow(0 0 9px rgba(255, 216, 119, 0.82));
+      transition: transform 0.25s ease, filter 0.25s ease;
+    }
+
+    .star-1 .star-icon {
+      animation: star-breathe 4.2s ease-in-out infinite;
+    }
+
+    .star-2 .star-icon {
+      animation: star-breathe 4.2s ease-in-out 1.3s infinite;
+    }
+
+    .star-3 .star-icon {
+      animation: star-breathe 4.2s ease-in-out 2.1s infinite;
+    }
+
+    .star-hotspot:hover .star-icon,
+    .star-hotspot:focus-visible .star-icon {
+      filter: drop-shadow(0 0 16px rgba(255, 224, 139, 1));
+      transform: scale(1.16) rotate(6deg);
+    }
+
+    .hotspot-label,
+    .star-label {
+      position: absolute;
+      left: 50%;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: max-content;
+      max-width: 260px;
+      padding: 7px 11px;
+      border: 1px solid rgba(255, 245, 219, 0.18);
+      border-radius: 999px;
+      background: rgba(7, 15, 29, 0.82);
+      color: #fff8e8;
+      font-family: var(--font-sans);
+      font-size: 0.7rem;
+      font-weight: 500;
+      line-height: 1.35;
+      text-align: center;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      transition:
+        opacity 0.22s ease,
+        transform 0.22s ease;
+    }
+
+    .hotspot-label {
+      bottom: calc(100% + 8px);
+      transform: translate(-50%, 4px);
+    }
+
+    .star-label {
+      top: calc(100% + 4px);
+      transform: translate(-50%, -4px);
+    }
+
+    .hotspot:hover .hotspot-label,
+    .hotspot:focus-visible .hotspot-label,
+    .star-hotspot:hover .star-label,
+    .star-hotspot:focus-visible .star-label {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .hotspot-grass .hotspot-label {
+      top: 20%;
+      bottom: auto;
+    }
+
+    .hotspot-label::after {
+      content: "→";
+      color: var(--yellow);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+    }
+
+    .hotspot-girl:hover,
+    .hotspot-dog:hover {
+      background: radial-gradient(
+        circle at 50% 55%,
+        rgba(255, 232, 169, 0.075) 0%,
+        transparent 68%
+      );
+    }
+
+    .hotspot-grass:hover {
+      background: linear-gradient(0deg, rgba(255, 226, 146, 0.07), transparent 70%);
+    }
+
+    @keyframes star-halo {
+      0%,
+      100% {
+        opacity: 0.45;
+        transform: scale(0.92);
+      }
+      50% {
+        opacity: 0.95;
+        transform: scale(1.08);
+      }
+    }
+
+    @keyframes star-breathe {
+      0%,
+      100% {
+        opacity: 0.82;
+        transform: scale(0.96);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.04);
+      }
+    }
+
+    /* SVG 里的小星星、萤火虫动效 */
+    .star-field circle,
+    .scene-sparkle {
+      animation: twinkle 4.6s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    .star-field circle:nth-child(3n) {
+      animation-delay: 0.9s;
+    }
+
+    .star-field circle:nth-child(4n) {
+      animation-delay: 1.8s;
+    }
+
+    .star-field circle:nth-child(5n) {
+      animation-delay: 2.7s;
+    }
+
+    .scene-sparkle {
+      animation-duration: 5.4s;
+    }
+
+    .firefly {
+      animation: firefly-blink 3.8s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+
+    .firefly:nth-child(2n) {
+      animation-delay: 1.1s;
+    }
+
+    .firefly:nth-child(3n) {
+      animation-delay: 2.2s;
+    }
+
+    @keyframes twinkle {
+      0%,
+      100% {
+        opacity: 0.35;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes firefly-blink {
+      0%,
+      100% {
+        opacity: 0.2;
+        transform: translateY(0);
+      }
+      45% {
+        opacity: 1;
+      }
+      65% {
+        opacity: 0.75;
+        transform: translateY(-4px);
+      }
+    }
+
+    .hero-hint {
+      position: absolute;
+      bottom: max(20px, env(safe-area-inset-bottom));
+      left: 50%;
+      z-index: 8;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 246, 225, 0.68);
+      font-family: var(--font-mono);
+      font-size: 0.61rem;
+      letter-spacing: 0.08em;
+      max-width: calc(100% - 40px);
+      line-height: 1.4;
+      text-align: center;
+      text-wrap: balance;
+      text-transform: uppercase;
+      pointer-events: none;
+      transform: translateX(-50%);
+      opacity: 0;
+      animation: hero-rise 1s ease 1.15s forwards;
+    }
+
+    .hero-hint::before {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--yellow);
+      box-shadow: 0 0 0 4px rgba(242, 196, 95, 0.12);
+    }
+
+    /* ============================================================
+       04. 下方内容公共布局
+       ============================================================ */
+    .container {
+      width: min(var(--container), calc(100% - 48px));
+      margin-inline: auto;
+    }
+
+    .section {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(82px, 10vw, 126px) 0;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 40px;
+      margin-bottom: clamp(36px, 5vw, 52px);
+    }
+
+    .section-heading > div {
+      min-width: 0;
+    }
+
+    .section h2 {
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-size: clamp(2.35rem, 4.8vw, 4.15rem);
+      font-weight: 500;
+      letter-spacing: -0.045em;
+      line-height: 1.04;
+      text-wrap: balance;
+    }
+
+    .section-note {
+      max-width: 330px;
+      color: var(--ink-muted);
+      font-size: 0.86rem;
+      line-height: 1.85;
+      text-align: right;
+      text-wrap: balance;
+    }
+
+    .kicker {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 19px;
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+      font-size: 0.63rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      line-height: 1.3;
+      text-transform: uppercase;
+    }
+
+    .kicker .kicker-star {
+      color: var(--yellow-deep);
+      font-size: 0.78rem;
+    }
+
+    .kicker .kicker-line {
+      width: 32px;
+      height: 1px;
+      background: currentColor;
+      opacity: 0.32;
+    }
+
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 253, 248, 0.48);
+      color: var(--ink-soft);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.005em;
+      line-height: 1.35;
+    }
+
+    /* ============================================================
+       05. About
+       ============================================================ */
+    .about {
+      background:
+        radial-gradient(500px 420px at 95% 2%, rgba(242, 196, 95, 0.2), transparent 72%),
+        var(--cream);
+    }
+
+    .about::after {
+      content: "";
+      position: absolute;
+      top: -150px;
+      right: -150px;
+      width: 430px;
+      height: 430px;
+      border: 1px solid rgba(23, 32, 51, 0.08);
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 48px rgba(23, 32, 51, 0.025),
+        0 0 0 96px rgba(23, 32, 51, 0.016);
+      pointer-events: none;
+    }
+
+    .about-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: clamp(42px, 7vw, 94px);
+      align-items: start;
+    }
+
+    .about-intro h2 {
+      font-size: clamp(2.8rem, 5.4vw, 4.5rem);
+    }
+
+    .about-intro h2 em {
+      color: var(--yellow-deep);
+      font-style: italic;
+      font-weight: 500;
+    }
+
+    .about-role {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-top: 24px;
+      color: var(--ink-soft);
+      font-size: 0.86rem;
+      line-height: 1.6;
+    }
+
+    .about-role::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      margin-right: 2px;
+      border-radius: 50%;
+      background: var(--yellow-deep);
+      box-shadow: 0 0 0 4px rgba(183, 124, 23, 0.09);
+    }
+
+    .about-body {
+      padding-top: 4px;
+    }
+
+    .about-lead {
+      color: var(--ink-soft);
+      font-size: clamp(0.96rem, 1.45vw, 1.04rem);
+      line-height: 2;
+    }
+
+    .about-tags {
+      margin-top: 25px;
+    }
+
+    .about-facts {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 36px;
+    }
+
+    .fact {
+      min-width: 0;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .fact-label {
+      display: block;
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+      font-size: 0.57rem;
+      letter-spacing: 0.1em;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    .fact-value {
+      display: block;
+      margin-top: 6px;
+      color: var(--ink);
+      font-size: 0.82rem;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    /* ============================================================
+       06. Projects
+       ============================================================ */
+    .projects {
+      background:
+        radial-gradient(750px 500px at 85% 10%, rgba(84, 114, 176, 0.17), transparent 68%),
+        var(--night-900);
+      color: var(--cream);
+    }
+
+    .projects::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 18% 24%, rgba(255, 238, 191, 0.7) 0 1px, transparent 1.7px),
+        radial-gradient(circle at 73% 62%, rgba(255, 238, 191, 0.52) 0 1px, transparent 1.6px),
+        radial-gradient(circle at 44% 84%, rgba(255, 238, 191, 0.44) 0 1px, transparent 1.5px);
+      background-size: 190px 190px, 260px 260px, 310px 310px;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .projects .container {
+      position: relative;
+      z-index: 1;
+    }
+
+    .projects .kicker {
+      color: #8fa2bc;
+    }
+
+    .projects .kicker .kicker-star {
+      color: var(--yellow);
+    }
+
+    .projects h2 {
+      color: #fff8e9;
+    }
+
+    .projects .section-note {
+      color: #93a4bd;
+    }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .project-card {
+      position: relative;
+      display: flex;
+      min-height: 352px;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 27px;
+      border: 1px solid var(--line-dark);
+      border-radius: var(--radius-lg);
+      background:
+        linear-gradient(150deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012)),
+        rgba(15, 28, 48, 0.62);
+      transition:
+        transform 0.32s ease,
+        border-color 0.32s ease,
+        box-shadow 0.32s ease,
+        background-color 0.32s ease;
+    }
+
+    .project-card::before {
+      content: "";
+      position: absolute;
+      top: -95px;
+      right: -80px;
+      width: 220px;
+      height: 220px;
+      border: 1px solid rgba(255, 226, 145, 0.1);
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 34px rgba(255, 226, 145, 0.018),
+        0 0 0 68px rgba(255, 226, 145, 0.012);
+      pointer-events: none;
+    }
+
+    .project-card:hover {
+      border-color: rgba(242, 196, 95, 0.42);
+      background-color: rgba(21, 38, 64, 0.7);
+      box-shadow: 0 30px 70px -50px rgba(0, 0, 0, 1);
+      transform: translateY(-6px);
+    }
+
+    .project-card:focus-within {
+      outline: 2px solid var(--yellow);
+      outline-offset: 4px;
+    }
+
+    .project-hit {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      border-radius: inherit;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .project-hit:focus-visible {
+      outline: none;
+    }
+
+    .project-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+
+    .project-number {
+      color: #7f92ad;
+      font-family: var(--font-mono);
+      font-size: 0.59rem;
+      letter-spacing: 0.15em;
+    }
+
+    .project-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 8px;
+      border: 1px solid rgba(170, 192, 223, 0.2);
+      border-radius: 999px;
+      color: #a9bad2;
+      font-family: var(--font-mono);
+      font-size: 0.54rem;
+      letter-spacing: 0.04em;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .project-status::before {
+      content: "";
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #8ea2bf;
+    }
+
+    .project-status--active {
+      border-color: rgba(242, 196, 95, 0.3);
+      color: #f6dc9a;
+    }
+
+    .project-status--active::before {
+      background: var(--yellow);
+      box-shadow: 0 0 7px rgba(242, 196, 95, 0.8);
+    }
+
+    .project-card h3 {
+      color: #fff7e7;
+      font-family: var(--font-display);
+      font-size: clamp(1.36rem, 2vw, 1.62rem);
+      font-weight: 500;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      text-wrap: balance;
+    }
+
+    .project-summary {
+      margin-top: 14px;
+      color: #9dadc4;
+      font-size: 0.82rem;
+      line-height: 1.8;
+    }
+
+    .project-card .tag-list {
+      margin-top: 22px;
+    }
+
+    .project-card .tag {
+      border-color: rgba(168, 190, 221, 0.15);
+      background: rgba(255, 255, 255, 0.035);
+      color: #a8b9d0;
+    }
+
+    .project-open {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: auto;
+      padding-top: 26px;
+      color: #f2d795;
+      font-family: var(--font-mono);
+      font-size: 0.61rem;
+      letter-spacing: 0.04em;
+    }
+
+    .project-open::after {
+      content: "→";
+      transition: transform 0.25s ease;
+    }
+
+    .project-card:hover .project-open::after {
+      transform: translateX(4px);
+    }
+
+    /* ============================================================
+       07. Interests
+       ============================================================ */
+    .interests {
+      background:
+        radial-gradient(560px 420px at 8% 100%, rgba(143, 168, 223, 0.17), transparent 70%),
+        var(--cream-2);
+    }
+
+    .interest-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 13px;
+    }
+
+    .interest-card {
+      position: relative;
+      display: flex;
+      min-height: 246px;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 23px;
+      border: 1px solid rgba(23, 32, 51, 0.08);
+      border-radius: var(--radius-md);
+      background: var(--paper);
+      transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+    }
+
+    .interest-card--sun {
+      background: #f8e8bd;
+    }
+
+    .interest-card--sky {
+      background: var(--blue-soft);
+    }
+
+    .interest-card--rose {
+      background: var(--rose-soft);
+    }
+
+    .interest-card--mint {
+      background: var(--mint-soft);
+    }
+
+    .interest-card::after {
+      content: "";
+      position: absolute;
+      right: -30px;
+      bottom: -45px;
+      width: 120px;
+      height: 120px;
+      border: 1px solid rgba(23, 32, 51, 0.08);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .interest-card:hover {
+      box-shadow: 0 24px 50px -40px rgba(23, 32, 51, 0.38);
+      transform: translateY(-5px);
+    }
+
+    .interest-icon {
+      display: grid;
+      width: 45px;
+      height: 45px;
+      margin-bottom: 40px;
+      border: 1px solid rgba(23, 32, 51, 0.08);
+      border-radius: 14px;
+      background: rgba(255, 253, 248, 0.46);
+      font-size: 1.28rem;
+      line-height: 1;
+      place-items: center;
+      transition: transform 0.3s ease;
+    }
+
+    .interest-card:hover .interest-icon {
+      transform: rotate(-5deg) scale(1.06);
+    }
+
+    .interest-card h3 {
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-size: 1.28rem;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+    }
+
+    .interest-card p {
+      margin-top: 8px;
+      color: var(--ink-soft);
+      font-size: 0.8rem;
+      line-height: 1.75;
+    }
+
+    .interest-meta {
+      margin-top: auto;
+      padding-top: 26px;
+      color: rgba(23, 32, 51, 0.46);
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    /* ============================================================
+       08. Contact
+       ============================================================ */
+    .contact {
+      background:
+        radial-gradient(680px 460px at 92% 4%, rgba(242, 196, 95, 0.18), transparent 72%),
+        linear-gradient(180deg, #e9eff8 0%, var(--cream) 100%);
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .contact-card {
+      position: relative;
+      display: flex;
+      min-height: 188px;
+      flex-direction: column;
+      align-items: flex-start;
+      overflow: hidden;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(255, 253, 248, 0.75);
+      text-decoration: none;
+      transition:
+        transform 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease,
+        background-color 0.3s ease;
+    }
+
+    .contact-card::after {
+      content: "";
+      position: absolute;
+      right: -44px;
+      bottom: -60px;
+      width: 150px;
+      height: 150px;
+      border: 1px solid rgba(23, 32, 51, 0.07);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .contact-card:hover {
+      border-color: rgba(23, 32, 51, 0.2);
+      background: var(--paper);
+      box-shadow: 0 24px 50px -40px rgba(23, 32, 51, 0.35);
+      transform: translateY(-5px);
+    }
+
+    .contact-icon {
+      display: grid;
+      width: 43px;
+      height: 43px;
+      border: 1px solid rgba(23, 32, 51, 0.08);
+      border-radius: 13px;
+      background: rgba(242, 196, 95, 0.18);
+      color: var(--ink);
+      place-items: center;
+    }
+
+    .contact-icon svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    .contact-body {
+      display: flex;
+      width: 100%;
+      flex: 1;
+      flex-direction: column;
+      justify-content: flex-end;
+      margin-top: 22px;
+    }
+
+    .contact-label {
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+      font-size: 0.57rem;
+      letter-spacing: 0.1em;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    .contact-value {
+      display: block;
+      overflow-wrap: anywhere;
+      margin-top: 3px;
+      color: var(--ink);
+      font-size: 0.88rem;
+      font-weight: 600;
+      line-height: 1.5;
+      text-decoration: none;
+    }
+
+    .contact-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      color: var(--yellow-deep);
+      font-size: 0.72rem;
+      font-weight: 550;
+      line-height: 1.4;
+      text-decoration: none;
+    }
+
+    .contact-action::after {
+      content: "↗";
+      font-size: 0.7rem;
+      transition: transform 0.25s ease;
+    }
+
+    .contact-card:hover .contact-action::after {
+      transform: translate(2px, -2px);
+    }
+
+    .wechat-row {
+      display: flex;
+      justify-content: center;
+      margin-top: clamp(36px, 5vw, 52px);
+    }
+
+    .wechat-card {
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: rgba(255, 253, 248, 0.72);
+      box-shadow: 0 24px 64px -52px rgba(23, 32, 51, 0.45);
+    }
+
+    .qr-placeholder {
+      display: flex;
+      width: 158px;
+      height: 158px;
+      flex: 0 0 auto;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 12px;
+      border: 1.5px dashed #b9c3d2;
+      border-radius: 13px;
+      background:
+        linear-gradient(145deg, rgba(242, 196, 95, 0.08), transparent 65%),
+        #fbf9f4;
+      color: var(--ink-muted);
+      text-align: center;
+    }
+
+    .qr-icon {
+      width: 27px;
+      height: 27px;
+      margin-bottom: 3px;
+      color: #7f8ba0;
+    }
+
+    .qr-title {
+      color: var(--ink-soft);
+      font-size: 0.72rem;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .qr-sub {
+      color: var(--ink-muted);
+      font-size: 0.6rem;
+      line-height: 1.5;
+    }
+
+    .qr-tag {
+      margin-top: 4px;
+      padding: 2px 5px;
+      border: 1px solid #e2e6ed;
+      border-radius: 4px;
+      background: #fff;
+      color: #8d98a8;
+      font-family: var(--font-mono);
+      font-size: 0.53rem;
+      line-height: 1.5;
+    }
+
+    /* 替换二维码图片时直接使用这个类 */
+    .qr-image {
+      width: 158px;
+      height: 158px;
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      object-fit: cover;
+    }
+
+    .wechat-copy {
+      max-width: 240px;
+    }
+
+    .wechat-copy .kicker {
+      margin-bottom: 9px;
+    }
+
+    .wechat-copy h3 {
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-size: 1.22rem;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+    }
+
+    .wechat-copy p {
+      margin-top: 7px;
+      color: var(--ink-muted);
+      font-size: 0.78rem;
+      line-height: 1.7;
+    }
+
+    /* ============================================================
+       09. Footer
+       ============================================================ */
+    .site-footer {
+      position: relative;
+      overflow: hidden;
+      padding: 34px 0;
+      border-top: 1px solid var(--line-dark);
+      background: var(--night-950);
+      color: #8293ac;
+    }
+
+    .site-footer::before {
+      content: "";
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      width: 480px;
+      height: 160px;
+      background: rgba(242, 196, 95, 0.07);
+      filter: blur(55px);
+      pointer-events: none;
+      transform: translateX(-50%);
+    }
+
+    .footer-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .footer-star {
+      color: var(--yellow);
+      font-size: 0.9rem;
+    }
+
+    .footer-name {
+      overflow: hidden;
+      color: #e7e2d6;
+      font-size: 0.82rem;
+      font-weight: 600;
+      line-height: 1.4;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .footer-copy {
+      color: #71839e;
+      font-family: var(--font-mono);
+      font-size: 0.57rem;
+      letter-spacing: 0.02em;
+      line-height: 1.8;
+      text-align: right;
+    }
+
+    .footer-copy a {
+      color: #becce0;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .footer-copy a:hover {
+      color: #fff;
+    }
+
+    /* ============================================================
+       10. 项目详情弹窗
+       ============================================================ */
+    .project-dialog {
+      width: min(620px, calc(100vw - 32px));
+      max-width: none;
+      max-height: none;
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-lg);
+      background: transparent;
+      color: var(--ink);
+      overflow: visible;
+    }
+
+    .project-dialog::backdrop {
+      background: rgba(4, 10, 20, 0.72);
+      -webkit-backdrop-filter: blur(7px);
+      backdrop-filter: blur(7px);
+    }
+
+    .project-dialog[open]::backdrop {
+      animation: backdrop-in 0.28s ease both;
+    }
+
+    .modal-panel {
+      position: relative;
+      max-height: calc(100vh - 40px);
+      max-height: calc(100svh - 40px);
+      overflow-y: auto;
+      padding: clamp(25px, 5vw, 42px);
+      border: 1px solid rgba(23, 32, 51, 0.08);
+      border-radius: var(--radius-lg);
+      background:
+        radial-gradient(340px 260px at 100% 0%, rgba(242, 196, 95, 0.18), transparent 68%),
+        var(--paper);
+      box-shadow: 0 44px 120px -30px rgba(0, 0, 0, 0.7);
+    }
+
+    .project-dialog[open] .modal-panel {
+      animation: modal-in 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 2;
+      display: grid;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 1px solid rgba(23, 32, 51, 0.12);
+      border-radius: 50%;
+      background: rgba(255, 253, 248, 0.66);
+      color: var(--ink);
+      font-size: 1.16rem;
+      line-height: 1;
+      place-items: center;
+      transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: var(--yellow-soft);
+      transform: rotate(90deg);
+    }
+
+    .modal-topline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding-right: 40px;
+    }
+
+    .modal-kicker {
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .modal-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--ink-soft);
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      line-height: 1.2;
+    }
+
+    .modal-status::before {
+      content: "";
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--yellow-deep);
+    }
+
+    .modal-title {
+      max-width: 520px;
+      color: var(--ink);
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 4vw, 2.7rem);
+      font-weight: 500;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+      text-wrap: balance;
+    }
+
+    .modal-role {
+      margin-top: 11px;
+      color: var(--yellow-deep);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+      line-height: 1.5;
+      text-transform: uppercase;
+    }
+
+    .modal-summary {
+      margin-top: 22px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+      line-height: 1.9;
+    }
+
+    .modal-section {
+      margin-top: 25px;
+    }
+
+    .modal-section h3 {
+      margin-bottom: 11px;
+      color: var(--ink-muted);
+      font-family: var(--font-mono);
+      font-size: 0.59rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .modal-detail-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .modal-detail-list li {
+      position: relative;
+      padding-left: 17px;
+      color: var(--ink-soft);
+      font-size: 0.84rem;
+      line-height: 1.75;
+    }
+
+    .modal-detail-list li::before {
+      content: "✦";
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: var(--yellow-deep);
+      font-size: 0.67rem;
+    }
+
+    .modal-tags {
+      margin-top: 23px;
+    }
+
+    .modal-note {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px dashed var(--line);
+      color: var(--ink-muted);
+      font-size: 0.73rem;
+      line-height: 1.65;
+    }
+
+    @keyframes modal-in {
+      from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @keyframes backdrop-in {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* ============================================================
+       11. 响应式
+       ============================================================ */
+    @media (max-width: 1000px) {
+      .project-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .project-card:last-child {
+        grid-column: 1 / -1;
+        min-height: 300px;
+      }
+
+      .interest-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .interest-card {
+        min-height: 225px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 34px;
+      }
+
+      .about-intro h2 {
+        max-width: 640px;
+      }
+
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .contact-card {
+        min-height: 0;
+      }
+
+      .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .section-note {
+        max-width: 520px;
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .project-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .project-card:last-child {
+        grid-column: auto;
+      }
+
+      .project-card {
+        min-height: 310px;
+      }
+
+      .wechat-card {
+        width: 100%;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .wechat-copy {
+        max-width: none;
+      }
+
+      .qr-placeholder,
+      .qr-image {
+        width: 100%;
+        height: 155px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        width: calc(100% - 32px);
+      }
+
+      .section {
+        padding: 72px 0;
+      }
+
+      .hero-copy {
+        top: clamp(74px, 10vh, 96px);
+        width: calc(100% - 34px);
+      }
+
+      .hero-eyebrow {
+        margin-bottom: 14px;
+        font-size: 0.57rem;
+        letter-spacing: 0.13em;
+      }
+
+      .hero-eyebrow::before,
+      .hero-eyebrow::after {
+        width: 14px;
+      }
+
+      .hello {
+        font-size: clamp(3.1rem, 14.5vw, 5.2rem);
+        letter-spacing: -0.06em;
+      }
+
+      .hero-sub {
+        max-width: 340px;
+        margin-top: 17px;
+        font-size: 0.8rem;
+        line-height: 1.75;
+      }
+
+      .hero-hint {
+        bottom: max(14px, env(safe-area-inset-bottom));
+        font-size: 0.54rem;
+        letter-spacing: 0.05em;
+      }
+
+      .hotspot-label,
+      .star-label {
+        display: none;
+      }
+
+      .lang-toggle {
+        min-width: 64px;
+        height: 36px;
+        padding: 0 11px;
+        font-size: 0.62rem;
+      }
+
+      .about-facts {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .fact {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 14px;
+        padding-top: 10px;
+      }
+
+      .fact-value {
+        margin-top: 0;
+        text-align: right;
+      }
+
+      .interest-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .interest-card {
+        min-height: 205px;
+      }
+
+      .interest-icon {
+        margin-bottom: 28px;
+      }
+
+      .footer-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .footer-copy {
+        text-align: left;
+      }
+
+      .project-dialog {
+        width: calc(100vw - 24px);
+      }
+
+      .modal-panel {
+        max-height: calc(100svh - 24px);
+        padding: 24px;
+        border-radius: 22px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .hero-copy {
+        top: 82px;
+      }
+
+      .hero-sub {
+        max-width: 300px;
+      }
+
+      .hello {
+        font-size: 3.05rem;
+      }
+
+      .section h2 {
+        font-size: clamp(2rem, 10vw, 2.7rem);
+      }
+
+      .project-card {
+        padding: 22px;
+      }
+
+      .contact-card {
+        padding: 21px;
+      }
+    }
+
+    /* 较矮的桌面 / 平板视口：收紧标题区，给星星留出呼吸空间 */
+    @media (max-height: 820px) and (min-width: 701px) {
+      .hero-copy {
+        top: clamp(42px, 7vh, 66px);
+      }
+
+      .hero-eyebrow {
+        margin-bottom: 10px;
+      }
+
+      .hello {
+        font-size: clamp(3.2rem, 7.5vw, 5.4rem);
+      }
+
+      .hero-sub {
+        max-width: 540px;
+        margin-top: 14px;
+        font-size: 0.84rem;
+        line-height: 1.7;
+      }
+    }
+
+    /* 横屏小高度设备：隐藏次要说明，避免首屏文字过多 */
+    @media (max-height: 620px) and (orientation: landscape) {
+      .hero-copy {
+        top: 54px;
+      }
+
+      .hero-eyebrow,
+      .hero-sub {
+        display: none;
+      }
+
+      .hello {
+        font-size: clamp(2.8rem, 7vw, 4.4rem);
+      }
+
+      .hero-hint {
+        display: none;
+      }
+    }
+
+    /* 尊重减少动态效果设置 */
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+      }
+
+      .hero-eyebrow,
+      .hello,
+      .hero-sub,
+      .hero-hint {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+
+<body id="top">
+  <script>
+    /* 尽早恢复语言设置，避免首屏闪烁；语言文案类为 .lang-en-text，不会影响 body */
+    (function () {
+      try {
+        if (localStorage.getItem('night-portfolio-lang') === 'en') {
+          document.documentElement.lang = 'en';
+          document.body.classList.add('lang-en');
+        }
+      } catch (error) {
+        /* 本地文件或隐私模式禁用存储时忽略 */
+      }
+    })();
+  </script>
+
+  <a class="skip-link" href="#about">
+    <span class="lang-zh">跳到主要内容</span>
+    <span class="lang-en-text">Skip to content</span>
+  </a>
+
+  <button
+    class="lang-toggle"
+    id="langToggle"
+    type="button"
+    aria-label="切换为英文 / Switch to English"
+    title="切换为英文 / Switch to English"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+      <circle cx="12" cy="12" r="9"></circle>
+      <path d="M3.5 9h17M3.5 15h17M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"></path>
+    </svg>
+    <span id="langLabel">EN</span>
+  </button>
+
+  <main>
+    <!-- ==========================================================
+         Hero：夜晚草地插画
+         ========================================================== -->
+    <section class="hero" id="home" aria-labelledby="hello-title">
+      <p class="sr-only">
+        <span class="lang-zh">夜晚草地插画：星空下站着一个小女孩和一只黄色小狗。点击小女孩前往个人简介，点击小狗前往兴趣爱好，点击草地前往联系方式，点击发光的星星查看项目详情。</span>
+        <span class="lang-en-text">Night meadow illustration: a little girl and a yellow dog stand beneath a starry sky. Click the girl for the about section, the dog for interests, the grass for contact, and the glowing stars for project details.</span>
+      </p>
+
+      <!--
+        插画与热区的共同坐标容器：热区百分比全部相对于这里。
+        如果换成自己的图片，可将下方 <svg class="scene-svg"> 替换为
+        <img class="scene-svg" src="your-illustration.jpg" alt="...">，
+        并保持 .artboard 的画面比例与实际图片一致（当前为 3:2）。
+      -->
+      <div class="artboard">
+        <svg
+          class="scene-svg"
+          viewBox="0 0 1500 1000"
+          preserveAspectRatio="xMidYMid slice"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <defs>
+            <linearGradient id="skyGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#050b1a"></stop>
+              <stop offset="0.36" stop-color="#0c1730"></stop>
+              <stop offset="0.62" stop-color="#1d3154"></stop>
+              <stop offset="0.8" stop-color="#4a5670"></stop>
+              <stop offset="0.92" stop-color="#8a756d"></stop>
+              <stop offset="1" stop-color="#3e4c53"></stop>
+            </linearGradient>
+
+            <radialGradient id="horizonGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#f8d49b" stop-opacity="0.44"></stop>
+              <stop offset="0.55" stop-color="#dba278" stop-opacity="0.13"></stop>
+              <stop offset="1" stop-color="#c48c67" stop-opacity="0"></stop>
+            </radialGradient>
+
+            <radialGradient id="nebulaGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#bcc7ff" stop-opacity="0.18"></stop>
+              <stop offset="0.5" stop-color="#8178d0" stop-opacity="0.07"></stop>
+              <stop offset="1" stop-color="#6c65b9" stop-opacity="0"></stop>
+            </radialGradient>
+
+            <radialGradient id="moonHalo" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#ffe7a5" stop-opacity="0.42"></stop>
+              <stop offset="0.52" stop-color="#ffda8c" stop-opacity="0.11"></stop>
+              <stop offset="1" stop-color="#ffda8c" stop-opacity="0"></stop>
+            </radialGradient>
+
+            <linearGradient id="moonFill" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fff4c7"></stop>
+              <stop offset="0.55" stop-color="#ffe39a"></stop>
+              <stop offset="1" stop-color="#e7b85f"></stop>
+            </linearGradient>
+
+            <linearGradient id="hillFar" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#1d3048"></stop>
+              <stop offset="1" stop-color="#122238"></stop>
+            </linearGradient>
+
+            <linearGradient id="hillMid" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#15273a"></stop>
+              <stop offset="1" stop-color="#0e1b2b"></stop>
+            </linearGradient>
+
+            <linearGradient id="meadowFront" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#0d1a23"></stop>
+              <stop offset="1" stop-color="#071018"></stop>
+            </linearGradient>
+
+            <linearGradient id="shootingStar" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#ffe5a5" stop-opacity="0"></stop>
+              <stop offset="0.65" stop-color="#ffe5a5" stop-opacity="0.65"></stop>
+              <stop offset="1" stop-color="#fff8df" stop-opacity="0.95"></stop>
+            </linearGradient>
+
+            <radialGradient id="lanternGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#ffdc82" stop-opacity="0.52"></stop>
+              <stop offset="0.38" stop-color="#ffcc6f" stop-opacity="0.2"></stop>
+              <stop offset="1" stop-color="#ffc45f" stop-opacity="0"></stop>
+            </radialGradient>
+
+            <radialGradient id="groundWarmth" cx="50%" cy="50%" r="50%">
+              <stop offset="0" stop-color="#f7cf86" stop-opacity="0.14"></stop>
+              <stop offset="0.6" stop-color="#f0bd67" stop-opacity="0.04"></stop>
+              <stop offset="1" stop-color="#f0bd67" stop-opacity="0"></stop>
+            </radialGradient>
+
+            <!-- 角色用浅色渐变，保持通透、干净的画面 -->
+            <linearGradient id="girlHairGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#4c5e78"></stop>
+              <stop offset="1" stop-color="#36455c"></stop>
+            </linearGradient>
+
+            <linearGradient id="girlCoatGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#c5d9c7"></stop>
+              <stop offset="1" stop-color="#a9c3ae"></stop>
+            </linearGradient>
+
+            <linearGradient id="dogFurGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#f9dc98"></stop>
+              <stop offset="1" stop-color="#efc16c"></stop>
+            </linearGradient>
+
+            <mask id="moonMask">
+              <rect width="1500" height="1000" fill="#ffffff"></rect>
+              <circle cx="1250" cy="150" r="61" fill="#000000"></circle>
+            </mask>
+
+            <g id="grassTuft" fill="none" stroke-linecap="round">
+              <path d="M0 0C-2-15-8-24-15-33"></path>
+              <path d="M0 0C0-18 2-29 4-40"></path>
+              <path d="M0 0C7-14 12-23 18-30"></path>
+              <path d="M0 0C-9-10-16-15-23-18"></path>
+            </g>
+
+            <g id="littleFlower">
+              <path d="M0 0V-25" fill="none" stroke="#9cafaa" stroke-width="1.4"></path>
+              <circle cx="0" cy="-29" r="3.2" fill="#fff5d7"></circle>
+              <circle cx="-4.2" cy="-24" r="2.2" fill="#fff5d7" opacity="0.8"></circle>
+              <circle cx="4.2" cy="-24" r="2.2" fill="#fff5d7" opacity="0.8"></circle>
+              <circle cx="0" cy="-25" r="1.4" fill="#f2c45f"></circle>
+            </g>
+          </defs>
+
+          <!-- 天空与远景 -->
+          <rect width="1500" height="1000" fill="url(#skyGradient)"></rect>
+          <ellipse cx="760" cy="405" rx="620" ry="190" fill="url(#nebulaGlow)" transform="rotate(-15 760 405)"></ellipse>
+          <ellipse cx="760" cy="710" rx="690" ry="240" fill="url(#horizonGlow)"></ellipse>
+
+          <!-- 月亮与月晕 -->
+          <circle cx="1225" cy="180" r="150" fill="url(#moonHalo)"></circle>
+          <circle
+            cx="1190"
+            cy="172"
+            r="63"
+            fill="url(#moonFill)"
+            mask="url(#moonMask)"
+          ></circle>
+
+          <!-- 流星 -->
+          <path d="M1030 122L1155 75" stroke="url(#shootingStar)" stroke-width="2.2" stroke-linecap="round"></path>
+          <circle cx="1158" cy="74" r="2.6" fill="#fff7dc"></circle>
+
+          <!-- 装饰星场 -->
+          <g class="star-field" fill="#fff8e6">
+            <circle cx="92" cy="118" r="1.5"></circle>
+            <circle cx="210" cy="66" r="1"></circle>
+            <circle cx="330" cy="150" r="2"></circle>
+            <circle cx="438" cy="82" r="1.2"></circle>
+            <circle cx="528" cy="205" r="1.4"></circle>
+            <circle cx="622" cy="92" r="1"></circle>
+            <circle cx="702" cy="158" r="2"></circle>
+            <circle cx="790" cy="61" r="1.2"></circle>
+            <circle cx="862" cy="220" r="1.3"></circle>
+            <circle cx="960" cy="102" r="1.6"></circle>
+            <circle cx="1080" cy="195" r="1"></circle>
+            <circle cx="1182" cy="84" r="2"></circle>
+            <circle cx="1300" cy="150" r="1.2"></circle>
+            <circle cx="1418" cy="62" r="1.4"></circle>
+            <circle cx="1362" cy="264" r="1"></circle>
+            <circle cx="72" cy="274" r="1.2"></circle>
+            <circle cx="182" cy="344" r="1"></circle>
+            <circle cx="300" cy="266" r="1.4"></circle>
+            <circle cx="412" cy="322" r="1"></circle>
+            <circle cx="502" cy="394" r="1.2"></circle>
+            <circle cx="592" cy="294" r="1"></circle>
+            <circle cx="664" cy="472" r="1.1"></circle>
+            <circle cx="762" cy="304" r="1.5"></circle>
+            <circle cx="842" cy="394" r="1"></circle>
+            <circle cx="942" cy="324" r="1.4"></circle>
+            <circle cx="1042" cy="444" r="1"></circle>
+            <circle cx="1132" cy="304" r="1.2"></circle>
+            <circle cx="1252" cy="394" r="1.3"></circle>
+            <circle cx="1342" cy="464" r="1"></circle>
+            <circle cx="1442" cy="334" r="1.5"></circle>
+            <circle cx="262" cy="444" r="1"></circle>
+            <circle cx="382" cy="514" r="1.3"></circle>
+            <circle cx="522" cy="564" r="1.1"></circle>
+            <circle cx="642" cy="524" r="1"></circle>
+            <circle cx="902" cy="524" r="1.2"></circle>
+            <circle cx="1012" cy="574" r="1"></circle>
+            <circle cx="1152" cy="524" r="1.4"></circle>
+            <circle cx="1292" cy="564" r="1"></circle>
+            <circle cx="1412" cy="524" r="1.2"></circle>
+            <circle cx="452" cy="190" r="0.9"></circle>
+            <circle cx="572" cy="338" r="0.9"></circle>
+            <circle cx="992" cy="284" r="0.9"></circle>
+          </g>
+
+          <g class="scene-sparkle" fill="#ffe7a8">
+            <path d="M550 164l2.4 8.2 8.2 2.4-8.2 2.4-2.4 8.2-2.4-8.2-8.2-2.4 8.2-2.4Z"></path>
+            <path d="M1134 166l2 7 7 2-7 2-2 7-2-7-7-2 7-2Z" opacity="0.72"></path>
+            <path d="M302 208l1.8 6 6 1.8-6 1.8-1.8 6-1.8-6-6-1.8 6-1.8Z" opacity="0.65"></path>
+            <path d="M724 108l1.6 5.3 5.3 1.6-5.3 1.6-1.6 5.3-1.6-5.3-5.3-1.6 5.3-1.6Z" opacity="0.7"></path>
+          </g>
+
+          <!-- 三颗互动星星的星座线 -->
+          <g fill="none" stroke="#ffe7a4" stroke-width="1.1" opacity="0.24">
+            <path d="M630 360L750 420L870 375" stroke-dasharray="3 8"></path>
+            <path d="M750 420L766 477" stroke-dasharray="3 8" opacity="0.55"></path>
+          </g>
+          <g fill="#ffe8a8">
+            <circle cx="630" cy="360" r="3.2" opacity="0.38"></circle>
+            <circle cx="750" cy="420" r="3.2" opacity="0.38"></circle>
+            <circle cx="870" cy="375" r="3.2" opacity="0.38"></circle>
+          </g>
+
+          <!-- 远山与草地 -->
+          <path
+            d="M0 704C174 657 317 681 470 658C649 631 779 672 942 652C1121 630 1274 652 1500 612V1000H0Z"
+            fill="url(#hillFar)"
+          ></path>
+          <path
+            d="M0 766C218 718 390 744 585 723C804 699 973 748 1187 724C1347 706 1443 725 1500 712V1000H0Z"
+            fill="url(#hillMid)"
+          ></path>
+          <path
+            d="M0 826C224 788 450 831 680 800C888 772 1083 818 1274 790C1380 774 1458 790 1500 782V1000H0Z"
+            fill="url(#meadowFront)"
+          ></path>
+
+          <!-- 地面暖光 -->
+          <ellipse cx="770" cy="912" rx="410" ry="120" fill="url(#groundWarmth)"></ellipse>
+
+          <!-- 左侧树的剪影 -->
+          <g fill="none" stroke="#07131c" stroke-linecap="round">
+            <path d="M198 914C207 837 207 757 204 665" stroke-width="18"></path>
+            <path d="M205 777C173 735 154 703 132 651" stroke-width="8"></path>
+            <path d="M205 731C241 689 264 668 291 628" stroke-width="7"></path>
+            <path d="M204 688C180 648 177 616 189 577" stroke-width="5"></path>
+            <path d="M208 653C234 613 251 596 274 573" stroke-width="4"></path>
+            <path d="M202 718C176 696 153 688 130 681" stroke-width="4"></path>
+          </g>
+          <g fill="#07131c" opacity="0.92">
+            <ellipse cx="132" cy="645" rx="18" ry="7" transform="rotate(-34 132 645)"></ellipse>
+            <ellipse cx="290" cy="624" rx="17" ry="6" transform="rotate(28 290 624)"></ellipse>
+            <ellipse cx="188" cy="570" rx="14" ry="6" transform="rotate(-24 188 570)"></ellipse>
+            <ellipse cx="277" cy="568" rx="13" ry="5" transform="rotate(32 277 568)"></ellipse>
+          </g>
+
+          <!-- 右侧树的剪影（宽屏可见，竖屏通常会被裁掉） -->
+          <g fill="none" stroke="#07131c" stroke-linecap="round" opacity="0.9">
+            <path d="M1338 922C1329 842 1332 760 1342 676" stroke-width="16"></path>
+            <path d="M1337 777C1307 735 1288 707 1267 671" stroke-width="7"></path>
+            <path d="M1340 735C1374 696 1398 676 1427 652" stroke-width="6"></path>
+            <path d="M1341 700C1318 660 1316 630 1327 598" stroke-width="4"></path>
+          </g>
+
+          <!-- 小灌木 -->
+          <g fill="#0a1920">
+            <path d="M280 824C286 795 310 783 332 793C342 773 377 777 382 802C404 807 411 834 392 848H295C282 842 276 834 280 824Z"></path>
+            <path d="M1110 819C1116 795 1136 785 1152 794C1163 775 1193 779 1196 803C1218 811 1219 836 1203 846H1124C1112 841 1107 830 1110 819Z"></path>
+            <path d="M420 842C424 823 441 816 453 824C460 808 484 811 487 830C501 836 501 851 490 859H432C422 855 418 849 420 842Z" opacity="0.8"></path>
+          </g>
+
+          <!-- 前景草地 -->
+          <g class="grass" stroke-width="2" opacity="0.95">
+            <use href="#grassTuft" transform="translate(62 975) scale(1.5)" stroke="#1b3932"></use>
+            <use href="#grassTuft" transform="translate(140 960) scale(1.2)" stroke="#203d34"></use>
+            <use href="#grassTuft" transform="translate(238 978) scale(1.65)" stroke="#18352e"></use>
+            <use href="#grassTuft" transform="translate(330 950) scale(1.1)" stroke="#234339"></use>
+            <use href="#grassTuft" transform="translate(446 984) scale(1.75)" stroke="#17342d"></use>
+            <use href="#grassTuft" transform="translate(548 955) scale(1.15)" stroke="#23463b"></use>
+            <use href="#grassTuft" transform="translate(628 985) scale(1.6)" stroke="#1b3b31"></use>
+            <use href="#grassTuft" transform="translate(712 963) scale(1.25)" stroke="#21433a"></use>
+            <use href="#grassTuft" transform="translate(790 985) scale(1.7)" stroke="#18382f"></use>
+            <use href="#grassTuft" transform="translate(874 958) scale(1.15)" stroke="#23463b"></use>
+            <use href="#grassTuft" transform="translate(968 982) scale(1.55)" stroke="#1c3b31"></use>
+            <use href="#grassTuft" transform="translate(1060 955) scale(1.2)" stroke="#22443a"></use>
+            <use href="#grassTuft" transform="translate(1172 985) scale(1.7)" stroke="#17352d"></use>
+            <use href="#grassTuft" transform="translate(1260 958) scale(1.1)" stroke="#23463b"></use>
+            <use href="#grassTuft" transform="translate(1378 982) scale(1.55)" stroke="#1c3b31"></use>
+            <use href="#grassTuft" transform="translate(1462 958) scale(1.2)" stroke="#22443a"></use>
+          </g>
+
+          <!-- 小花 -->
+          <use href="#littleFlower" transform="translate(487 916) scale(1.05)"></use>
+          <use href="#littleFlower" transform="translate(512 944) scale(0.86)"></use>
+          <use href="#littleFlower" transform="translate(1018 923) scale(1.05)"></use>
+          <use href="#littleFlower" transform="translate(1044 949) scale(0.82)"></use>
+          <use href="#littleFlower" transform="translate(706 962) scale(0.8)"></use>
+          <use href="#littleFlower" transform="translate(928 967) scale(0.74)"></use>
+
+          <!-- 萤火虫 -->
+          <g fill="#ffe18b">
+            <circle class="firefly" cx="493" cy="796" r="2.4"></circle>
+            <circle class="firefly" cx="535" cy="860" r="1.8"></circle>
+            <circle class="firefly" cx="612" cy="745" r="2.1"></circle>
+            <circle class="firefly" cx="704" cy="833" r="1.7"></circle>
+            <circle class="firefly" cx="936" cy="790" r="2.2"></circle>
+            <circle class="firefly" cx="974" cy="858" r="1.7"></circle>
+            <circle class="firefly" cx="1040" cy="748" r="2"></circle>
+            <circle class="firefly" cx="878" cy="866" r="1.6"></circle>
+          </g>
+
+          <!-- 小女孩（大头小身比例、简洁线条、通透配色） -->
+          <g id="little-girl" transform="translate(545 555)" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="104" cy="342" rx="88" ry="13" fill="#041018" opacity="0.4"></ellipse>
+
+            <!-- 浅色外勾边，让角色在深色草地里保持清晰 -->
+            <g fill="none" stroke="#fff6df" stroke-width="4.5" opacity="0.34">
+              <path d="M20 98C11 50 48 8 104 8C160 8 197 50 188 98C198 122 191 151 174 166C160 178 143 169 133 160C121 172 87 172 75 160C65 169 48 178 34 166C17 151 10 122 20 98Z"></path>
+              <path d="M58 168C72 155 136 155 150 168L159 247C131 258 77 258 49 247Z"></path>
+              <path d="M60 244C78 236 130 236 148 244L160 292C130 304 78 304 48 292Z"></path>
+            </g>
+
+            <!-- 后层头发 -->
+            <path d="M20 98C11 50 48 8 104 8C160 8 197 50 188 98C198 122 191 151 174 166C160 178 143 169 133 160C121 172 87 172 75 160C65 169 48 178 34 166C17 151 10 122 20 98Z" fill="url(#girlHairGradient)" stroke="#2e3948" stroke-width="1.5"></path>
+            <path d="M58 35C75 20 96 14 113 16C133 18 151 29 162 47" fill="none" stroke="#8496ad" stroke-width="2" opacity="0.4"></path>
+
+            <!-- 短短的腿与圆靴子 -->
+            <rect x="82" y="291" width="15" height="35" rx="7.5" fill="#f8ead6" stroke="#9a7b66" stroke-width="1.1"></rect>
+            <rect x="112" y="291" width="15" height="35" rx="7.5" fill="#f8ead6" stroke="#9a7b66" stroke-width="1.1"></rect>
+            <path d="M68 321C68 314 74 309 82 309H99C106 309 111 314 111 321V331C111 338 105 342 98 342H81C74 342 68 338 68 331Z" fill="#b78a67" stroke="#664f42" stroke-width="1.4"></path>
+            <path d="M109 321C109 314 115 309 123 309H140C148 309 153 314 153 321V331C153 338 147 342 140 342H123C116 342 109 338 109 331Z" fill="#a87a58" stroke="#664f42" stroke-width="1.4"></path>
+            <path d="M75 332H103M118 332H146" stroke="#7d5c46" stroke-width="1.2" opacity="0.6"></path>
+
+            <!-- 裙子 -->
+            <path d="M60 244C78 236 130 236 148 244L160 292C130 304 78 304 48 292Z" fill="#6f958b" stroke="#4e6e66" stroke-width="1.4"></path>
+            <path d="M72 252C93 246 119 246 138 252" fill="none" stroke="#98b6aa" stroke-width="1.1"></path>
+            <path d="M95 270C100 263 108 264 112 271C106 277 98 277 95 270Z" fill="#9dbca8" stroke="#5d7868" stroke-width="0.9"></path>
+
+            <!-- 短短的外套与手臂 -->
+            <path d="M58 168C72 155 136 155 150 168L159 247C131 258 77 258 49 247Z" fill="url(#girlCoatGradient)" stroke="#5e7b69" stroke-width="1.5"></path>
+            <path d="M139 175C147 197 151 222 150 244C146 247 141 249 137 251C141 224 137 194 129 178Z" fill="#f8e5b1" opacity="0.18"></path>
+            <path d="M67 177C53 190 48 210 53 227" fill="none" stroke="#5e7b69" stroke-width="23"></path>
+            <path d="M67 177C53 190 48 210 53 227" fill="none" stroke="#b8cfba" stroke-width="20"></path>
+            <path d="M141 177C156 190 161 210 156 227" fill="none" stroke="#5e7b69" stroke-width="23"></path>
+            <path d="M141 177C156 190 161 210 156 227" fill="none" stroke="#b8cfba" stroke-width="20"></path>
+
+            <!-- 奶油色领口 -->
+            <path d="M83 158C91 176 117 176 125 158L136 169C128 191 80 191 68 169Z" fill="#fff0cc" stroke="#8d795d" stroke-width="1.2"></path>
+            <path d="M104 184C99 180 99 174 104 171C109 174 109 180 104 184Z" fill="#d9b877" stroke="#8c7449" stroke-width="0.9"></path>
+
+            <!-- 小手与脖子 -->
+            <circle cx="53" cy="230" r="9.5" fill="#f1cfb0" stroke="#6d5546" stroke-width="1.2"></circle>
+            <circle cx="156" cy="230" r="9.5" fill="#f1cfb0" stroke="#6d5546" stroke-width="1.2"></circle>
+            <path d="M86 148C93 158 115 158 122 148V168C111 175 97 175 86 168Z" fill="#f0cfb2"></path>
+
+            <!-- 大圆脸与开心闭眼表情 -->
+            <ellipse cx="104" cy="93" rx="57" ry="61" fill="#f0cfb2" stroke="#5e483c" stroke-width="1.4"></ellipse>
+            <path d="M49 87C52 43 78 22 104 22C130 22 156 44 159 87C146 68 129 61 116 73C106 57 92 57 82 73C69 61 62 69 49 87Z" fill="url(#girlHairGradient)" stroke="#2e3948" stroke-width="1.5"></path>
+            <path d="M49 93C40 116 44 143 58 157C63 134 61 112 67 99Z" fill="url(#girlHairGradient)" stroke="#2e3948" stroke-width="1.4"></path>
+            <path d="M159 93C168 116 164 143 150 157C145 134 147 112 141 99Z" fill="url(#girlHairGradient)" stroke="#2e3948" stroke-width="1.4"></path>
+
+            <!-- 左侧叶片发饰 + 右侧小金星 -->
+            <g fill="#c4ddc0" stroke="#5f7663" stroke-width="1.2">
+              <path d="M47 56C27 36 5 54 14 82C35 95 51 76 47 56Z"></path>
+              <path d="M48 80C30 70 14 86 24 104C44 111 55 94 48 80Z"></path>
+              <path d="M37 66C26 64 18 70 13 79" fill="none" stroke="#8ba28c" stroke-width="0.9"></path>
+            </g>
+            <path d="M149 59L152 67L160 68L154 74L156 82L149 78L142 82L144 74L138 68L146 67Z" fill="#f3d078" stroke="#9a7938" stroke-width="0.9"></path>
+
+            <path d="M71 109Q82 98 93 109" fill="none" stroke="#3b3540" stroke-width="3"></path>
+            <path d="M115 109Q126 98 137 109" fill="none" stroke="#3b3540" stroke-width="3"></path>
+            <path d="M69 105L64 102M139 105L144 102" fill="none" stroke="#3b3540" stroke-width="1.2" opacity="0.7"></path>
+            <ellipse cx="66" cy="122" rx="9" ry="4.5" fill="#f2a89e" opacity="0.45"></ellipse>
+            <ellipse cx="142" cy="122" rx="9" ry="4.5" fill="#f2a89e" opacity="0.45"></ellipse>
+            <path d="M101 116Q104 114 107 116" fill="none" stroke="#8a5d4d" stroke-width="1.2"></path>
+            <path d="M93 125Q104 136 115 125Q114 145 104 145Q94 145 93 125Z" fill="#a55e63" stroke="#633f42" stroke-width="1.1"></path>
+            <path d="M99 139Q104 143 109 139" fill="#f3a7a3"></path>
+
+            <!-- 小提灯 -->
+            <circle cx="177" cy="262" r="62" fill="url(#lanternGlow)"></circle>
+            <path d="M156 233C165 239 170 246 173 253" fill="none" stroke="#8d7148" stroke-width="1.4"></path>
+            <path d="M167 254Q174 240 181 254" fill="none" stroke="#b08b54" stroke-width="1.5"></path>
+            <path d="M159 252H191V286C191 293 185 298 178 298H172C165 298 159 293 159 286Z" fill="#ffe8a0" fill-opacity="0.28" stroke="#7c6a4a" stroke-width="1.3"></path>
+            <path d="M159 261H191M168 252V247H182V252" fill="none" stroke="#7c6a4a" stroke-width="1.3"></path>
+            <circle cx="175" cy="274" r="6.5" fill="#ffdc84"></circle>
+            <circle cx="175" cy="274" r="3" fill="#fff8d8"></circle>
+            <path d="M165 274C161 270 162 265 166 262M185 274C189 270 188 265 184 262" fill="none" stroke="#fff2bf" stroke-width="1.1" opacity="0.8"></path>
+            <path d="M163 291H187" stroke="#7c6a4a" stroke-width="1.3"></path>
+          </g>
+
+          <!-- 黄色小狗（大头短身、简洁线条、通透毛色） -->
+          <g id="yellow-dog" transform="translate(775 690)" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="97" cy="204" rx="74" ry="10" fill="#041018" opacity="0.35"></ellipse>
+
+            <!-- 浅色外勾边 -->
+            <g fill="none" stroke="#fff6df" stroke-width="4.5" opacity="0.34">
+              <path d="M140 148C178 158 195 132 184 108C180 98 166 99 169 113C177 128 165 140 132 136Z"></path>
+              <path d="M52 150C45 127 58 109 86 105C119 101 147 119 151 151C154 181 139 198 104 200C71 202 56 181 52 150Z"></path>
+              <g transform="rotate(-6 97 78)">
+                <circle cx="97" cy="78" r="61"></circle>
+                <path d="M66 44C38 37 18 76 28 122C36 153 69 154 74 124C78 92 66 64 74 48Z"></path>
+                <path d="M128 44C156 37 176 76 166 122C158 153 125 154 120 124C116 92 128 64 120 48Z"></path>
+              </g>
+            </g>
+
+            <!-- 尾巴 -->
+            <path d="M140 148C178 158 195 132 184 108C180 98 166 99 169 113C177 128 165 140 132 136Z" fill="url(#dogFurGradient)" stroke="#5d4c3d" stroke-width="1.5"></path>
+
+            <!-- 身体 -->
+            <path d="M52 150C45 127 58 109 86 105C119 101 147 119 151 151C154 181 139 198 104 200C71 202 56 181 52 150Z" fill="url(#dogFurGradient)" stroke="#5d4c3d" stroke-width="1.6"></path>
+            <path d="M63 136C58 159 67 182 86 194C96 200 108 200 118 194C106 181 98 160 102 130C86 124 72 127 63 136Z" fill="#fff3d5"></path>
+            <ellipse cx="78" cy="195" rx="13" ry="6" fill="#fff0c9" stroke="#5d4c3d" stroke-width="1.2"></ellipse>
+            <ellipse cx="107" cy="195" rx="13" ry="6" fill="#fff0c9" stroke="#5d4c3d" stroke-width="1.2"></ellipse>
+
+            <!-- 领巾 -->
+            <path d="M66 122Q97 140 128 122L120 151Q97 162 74 151Z" fill="#b8d2bd" stroke="#58705e" stroke-width="1.4"></path>
+            <path d="M67 123Q97 143 127 123" fill="none" stroke="#fff2d2" stroke-width="2.4"></path>
+            <circle cx="97" cy="146" r="4" fill="#f4ce73" stroke="#8c703c" stroke-width="1"></circle>
+
+            <!-- 大脑袋与软耳朵 -->
+            <g transform="rotate(-6 97 78)">
+              <path d="M66 44C38 37 18 76 28 122C36 153 69 154 74 124C78 92 66 64 74 48Z" fill="#e7bd77" stroke="#5d4c3d" stroke-width="1.5"></path>
+              <path d="M67 67C45 69 34 92 43 122C49 141 65 139 69 117C71 99 67 81 71 69Z" fill="#fbe7b9" opacity="0.6"></path>
+              <path d="M128 44C156 37 176 76 166 122C158 153 125 154 120 124C116 92 128 64 120 48Z" fill="#e7bd77" stroke="#5d4c3d" stroke-width="1.5"></path>
+              <path d="M127 67C149 69 160 92 151 122C145 141 129 139 125 117C123 99 127 81 123 69Z" fill="#fbe7b9" opacity="0.6"></path>
+              <circle cx="97" cy="78" r="61" fill="url(#dogFurGradient)" stroke="#5d4c3d" stroke-width="1.6"></circle>
+              <path d="M83 24C85 12 95 10 98 20C102 9 113 13 114 25" fill="url(#dogFurGradient)" stroke="#5d4c3d" stroke-width="1.3"></path>
+
+              <!-- 奶油色口鼻 -->
+              <ellipse cx="97" cy="102" rx="34" ry="26" fill="#fff3d5" stroke="#6a5745" stroke-width="1.2"></ellipse>
+
+              <!-- 小圆点眼睛 -->
+              <ellipse cx="73" cy="76" rx="7" ry="9.5" fill="#5c473b"></ellipse>
+              <ellipse cx="121" cy="76" rx="7" ry="9.5" fill="#5c473b"></ellipse>
+              <circle cx="70.5" cy="72" r="2.4" fill="#ffffff"></circle>
+              <circle cx="118.5" cy="72" r="2.4" fill="#ffffff"></circle>
+              <circle cx="76" cy="82" r="1.1" fill="#ffffff" opacity="0.7"></circle>
+              <circle cx="124" cy="82" r="1.1" fill="#ffffff" opacity="0.7"></circle>
+
+              <!-- 鼻子、嘴巴、小舌头 -->
+              <path d="M89 94Q97 88 105 94Q105 103 97 104Q89 103 89 94Z" fill="#4b3930" stroke="#3a2b24" stroke-width="1"></path>
+              <path d="M94 92Q97 90 100 92" fill="none" stroke="#8f6e5f" stroke-width="1"></path>
+              <path d="M79 105Q97 118 115 105" fill="none" stroke="#6a4a3b" stroke-width="1.3"></path>
+              <path d="M92 113Q97 123 104 114Q102 128 97 128Q92 128 90 114Z" fill="#f3aaa4" stroke="#7f4d49" stroke-width="1"></path>
+              <path d="M94 117Q97 120 100 117" fill="#ffd1cb"></path>
+
+              <!-- 腮红与小叶子 -->
+              <ellipse cx="57" cy="99" rx="8" ry="4" fill="#f2a79b" opacity="0.35"></ellipse>
+              <ellipse cx="137" cy="99" rx="8" ry="4" fill="#f2a79b" opacity="0.35"></ellipse>
+              <g transform="rotate(18 145 41)">
+                <path d="M140 44C134 32 140 22 153 20C159 31 155 42 140 44Z" fill="#c4ddc0" stroke="#5f7663" stroke-width="1.2"></path>
+                <path d="M142 41C146 35 150 30 153 27" fill="none" stroke="#8ba28c" stroke-width="0.8"></path>
+              </g>
+            </g>
+
+            <path d="M132 38C144 47 151 60 153 74" fill="none" stroke="#fff1c7" stroke-width="1.3" opacity="0.5"></path>
+          </g>
+
+          <!-- 前景草叶，稍微遮住脚边 -->
+          <g stroke-width="1.8" opacity="0.9">
+            <use href="#grassTuft" transform="translate(586 928) scale(0.9)" stroke="#24473c"></use>
+            <use href="#grassTuft" transform="translate(746 940) scale(1.05)" stroke="#1d3c33"></use>
+            <use href="#grassTuft" transform="translate(820 927) scale(0.8)" stroke="#26483e"></use>
+            <use href="#grassTuft" transform="translate(1000 936) scale(0.9)" stroke="#1c3b32"></use>
+          </g>
+        </svg>
+
+        <!--
+          插画热区：位置均相对于 .artboard 的宽高百分比
+          若要替换成自己的插画，保持 .artboard 的比例与画面一致，
+          再在 CSS「插画热区」区域微调下面几个百分比即可。
+        -->
+        <a class="hotspot hotspot-girl" href="#about" aria-label="点击小女孩，前往个人简介 / Click the girl to read about me">
+          <span class="hotspot-label">
+            <span class="lang-zh">关于我</span>
+            <span class="lang-en-text">About me</span>
+          </span>
+        </a>
+
+        <button
+          class="hotspot star-hotspot star-1"
+          type="button"
+          data-project="p1"
+          aria-haspopup="dialog"
+          aria-label="查看数学建模项目 / Open the mathematical modeling project"
+        >
+          <svg class="star-icon" viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M20 1.5C21.3 11.4 24.6 14.7 38.5 20 24.6 25.3 21.3 28.6 20 38.5 18.7 28.6 15.4 25.3 1.5 20 15.4 14.7 18.7 11.4 20 1.5Z" fill="#ffe4a0"></path>
+            <circle cx="20" cy="20" r="2.2" fill="#fff9e5"></circle>
+          </svg>
+          <span class="star-label">
+            <span class="lang-zh">项目 01 · 数学建模</span>
+            <span class="lang-en-text">Project 01 · Modeling</span>
+          </span>
+        </button>
+
+        <button
+          class="hotspot star-hotspot star-2"
+          type="button"
+          data-project="p2"
+          aria-haspopup="dialog"
+          aria-label="查看开源复现项目 / Open the open-source replication project"
+        >
+          <svg class="star-icon" viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M20 1.5C21.3 11.4 24.6 14.7 38.5 20 24.6 25.3 21.3 28.6 20 38.5 18.7 28.6 15.4 25.3 1.5 20 15.4 14.7 18.7 11.4 20 1.5Z" fill="#ffe4a0"></path>
+            <circle cx="20" cy="20" r="2.2" fill="#fff9e5"></circle>
+          </svg>
+          <span class="star-label">
+            <span class="lang-zh">项目 02 · 开源复现</span>
+            <span class="lang-en-text">Project 02 · Open source</span>
+          </span>
+        </button>
+
+        <button
+          class="hotspot star-hotspot star-3"
+          type="button"
+          data-project="p3"
+          aria-haspopup="dialog"
+          aria-label="查看夜晚草地图项目 / Open the night meadow project"
+        >
+          <svg class="star-icon" viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M20 1.5C21.3 11.4 24.6 14.7 38.5 20 24.6 25.3 21.3 28.6 20 38.5 18.7 28.6 15.4 25.3 1.5 20 15.4 14.7 18.7 11.4 20 1.5Z" fill="#ffe4a0"></path>
+            <circle cx="20" cy="20" r="2.2" fill="#fff9e5"></circle>
+          </svg>
+          <span class="star-label">
+            <span class="lang-zh">项目 03 · 夜晚草地</span>
+            <span class="lang-en-text">Project 03 · Night meadow</span>
+          </span>
+        </button>
+
+        <a class="hotspot hotspot-dog" href="#interests" aria-label="点击小狗，前往兴趣爱好 / Click the dog to see my interests">
+          <span class="hotspot-label">
+            <span class="lang-zh">兴趣爱好</span>
+            <span class="lang-en-text">Interests</span>
+          </span>
+        </a>
+
+        <a class="hotspot hotspot-grass" href="#contact" aria-label="点击草地，前往联系方式 / Click the grass to get in touch">
+          <span class="hotspot-label">
+            <span class="lang-zh">联系我</span>
+            <span class="lang-en-text">Contact</span>
+          </span>
+        </a>
+      </div>
+
+      <div class="hero-copy">
+        <p class="hero-eyebrow">
+          <span class="lang-zh">星空下的小小世界</span>
+          <span class="lang-en-text">A little world under the stars</span>
+        </p>
+        <h1 class="hello" id="hello-title">Hello <em>Friends</em>!</h1>
+        <p class="hero-sub">
+          <span class="lang-zh">
+            欢迎来到我的小小宇宙。点击女孩、<span class="nowrap">小狗</span>、草地，或三颗发光的星星去探索。
+          </span>
+          <span class="lang-en-text">
+            Welcome to my little universe. Tap the girl, dog, grass, or glowing stars to explore.
+          </span>
+        </p>
+      </div>
+
+      <p class="hero-hint">
+        <span class="lang-zh">点击画面探索 · 点击星星看项目</span>
+        <span class="lang-en-text">Tap the scene · Tap a star</span>
+      </p>
+    </section>
+
+    <!-- ==========================================================
+         About
+         ========================================================== -->
+    <section class="section about" id="about" aria-labelledby="about-title">
+      <div class="container">
+        <div class="about-grid">
+          <div class="about-intro">
+            <p class="kicker">
+              <span class="kicker-star">✦</span>
+              <span>01</span>
+              <span class="lang-zh">关于我</span>
+              <span class="lang-en-text">About me</span>
+              <span class="kicker-line" aria-hidden="true"></span>
+            </p>
+            <h2 id="about-title">
+              <span class="lang-zh">
+                嗨，我是<br>
+                <em>【萝卜】</em>
+              </span>
+              <span class="lang-en-text">
+                Hi, I'm<br>
+                <em>【LuoBu】</em>
+              </span>
+            </h2>
+            <p class="about-role">
+              <span class="lang-zh">机器人工程 · 大二 · 开源复现爱好者</span>
+              <span class="lang-en-text">Robotics Engineering · Sophomore · Open-source Enthusiast</span>
+            </p>
+          </div>
+
+          <div class="about-body">
+            <p class="about-lead">
+              <span class="lang-zh">
+                我是机器人工程专业的大二学生，正在学习 C/C++、SolidWorks、Arduino，并逐步接触 STM32。
+                平时喜欢复现网上的开源项目，在动手实践中理解硬件与代码如何真正协同。
+                课余时间会踢足球、看小说、拍照和剪视频，也喜欢在夜里抬头看星星。
+                欢迎交流技术、分享项目，或者一起出去晒太阳。
+              </span>
+              <span class="lang-en-text">
+                I'm a sophomore in Robotics Engineering, building my foundation in C/C++, SolidWorks,
+                and Arduino while gradually exploring STM32. I enjoy reproducing open-source projects
+                and learning how hardware and code work together through hands-on practice. Outside
+                class, I play football, watch anime, take photos, and edit videos—and I still look up
+                at the stars. I'm always open to technical conversations, project exchanges, or a match.
+              </span>
+            </p>
+
+            <div class="tag-list about-tags" aria-label="关键词 / Keywords">
+              <span class="tag">C/C++</span>
+              <span class="tag">SolidWorks</span>
+              <span class="tag">Arduino</span>
+              <span class="tag">STM32</span>
+              <span class="tag">MATLAB</span>
+              <span class="tag">
+                <span class="lang-zh">开源复现</span>
+                <span class="lang-en-text">Open-source Replication</span>
+              </span>
+            </div>
+
+            <div class="about-facts" aria-label="快速了解 / Quick facts">
+              <div class="fact">
+                <span class="fact-label">
+                  <span class="lang-zh">专业</span>
+                  <span class="lang-en-text">Major</span>
+                </span>
+                <span class="fact-value">
+                  <span class="lang-zh">机器人工程</span>
+                  <span class="lang-en-text">Robotics Engineering</span>
+                </span>
+              </div>
+              <div class="fact">
+                <span class="fact-label">
+                  <span class="lang-zh">年级</span>
+                  <span class="lang-en-text">Year</span>
+                </span>
+                <span class="fact-value">
+                  <span class="lang-zh">大二</span>
+                  <span class="lang-en-text">Sophomore</span>
+                </span>
+              </div>
+              <div class="fact">
+                <span class="fact-label">
+                  <span class="lang-zh">最近在学</span>
+                  <span class="lang-en-text">Learning now</span>
+                </span>
+                <span class="fact-value">
+                  <span class="lang-zh">STM32 · 嵌入式</span>
+                  <span class="lang-en-text">STM32 · Embedded</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         Projects
+         ========================================================== -->
+    <section class="section projects" id="projects" aria-labelledby="projects-title">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">
+              <span class="kicker-star">✦</span>
+              <span>02</span>
+              <span class="lang-zh">项目</span>
+              <span class="lang-en-text">Projects</span>
+              <span class="kicker-line" aria-hidden="true"></span>
+            </p>
+            <h2 id="projects-title">
+              <span class="lang-zh">把好奇心，做成看得见的小项目。</span>
+              <span class="lang-en-text">Turning curiosity into things I can see.</span>
+            </h2>
+          </div>
+          <p class="section-note">
+            <span class="lang-zh">点击卡片，或回到星空点击发光的星星，查看项目详情。</span>
+            <span class="lang-en-text">Open a card—or head back to the sky and tap a glowing star for details.</span>
+          </p>
+        </div>
+
+        <div class="project-grid">
+          <article class="project-card">
+            <button
+              class="project-hit"
+              type="button"
+              data-project="p1"
+              aria-haspopup="dialog"
+              aria-label="查看数学建模项目 / Open the mathematical modeling project"
+            ></button>
+            <div class="project-top">
+              <span class="project-number">PROJECT / 01</span>
+              <span class="project-status">
+                <span class="lang-zh">已完成</span>
+                <span class="lang-en-text">Completed</span>
+              </span>
+            </div>
+            <h3>
+              <span class="lang-zh"><span class="nowrap">数学建模校赛 ·</span> <span class="nowrap">数据分析与建模</span></span>
+              <span class="lang-en-text">Campus Mathematical Modeling · Data &amp; Modeling</span>
+            </h3>
+            <p class="project-summary">
+              <span class="lang-zh">
+                负责模型构建与数据检索，用 MATLAB 完成数据分析与可视化，提交论文；后续参与省赛获参与奖。
+              </span>
+              <span class="lang-en-text">
+                Led model construction and data research, used MATLAB for analysis and visualization,
+                and submitted the paper; later earned a provincial participation award.
+              </span>
+            </p>
+            <ul class="tag-list" aria-label="项目标签 / Project tags">
+              <li class="tag">MATLAB</li>
+              <li class="tag">
+                <span class="lang-zh">数据分析</span>
+                <span class="lang-en-text">Data Analysis</span>
+              </li>
+              <li class="tag">
+                <span class="lang-zh">数学建模</span>
+                <span class="lang-en-text">Modeling</span>
+              </li>
+              <li class="tag">
+                <span class="lang-zh">省赛参与奖</span>
+                <span class="lang-en-text">Provincial Award</span>
+              </li>
+            </ul>
+            <span class="project-open">
+              <span class="lang-zh">查看详情</span>
+              <span class="lang-en-text">View details</span>
+            </span>
+          </article>
+
+          <article class="project-card">
+            <button
+              class="project-hit"
+              type="button"
+              data-project="p2"
+              aria-haspopup="dialog"
+              aria-label="查看开源复现项目 / Open the open-source replication project"
+            ></button>
+            <div class="project-top">
+              <span class="project-number">PROJECT / 02</span>
+              <span class="project-status project-status--active">
+                <span class="lang-zh">进行中</span>
+                <span class="lang-en-text">Ongoing</span>
+              </span>
+            </div>
+            <h3>
+              <span class="lang-zh">开源项目复现</span>
+              <span class="lang-en-text">Open-source Replication</span>
+            </h3>
+            <p class="project-summary">
+              <span class="lang-zh">
+                喜欢复现网上的开源项目，通过动手实践加深对硬件和代码的理解，具体项目与成果持续补充。
+              </span>
+              <span class="lang-en-text">
+                I enjoy rebuilding open-source projects from the community, deepening my understanding
+                of hardware and code through practice. More projects and results are on the way.
+              </span>
+            </p>
+            <ul class="tag-list" aria-label="项目标签 / Project tags">
+              <li class="tag">Arduino</li>
+              <li class="tag">C/C++</li>
+              <li class="tag">
+                <span class="lang-zh">开源社区</span>
+                <span class="lang-en-text">Open-source Community</span>
+              </li>
+            </ul>
+            <span class="project-open">
+              <span class="lang-zh">查看详情</span>
+              <span class="lang-en-text">View details</span>
+            </span>
+          </article>
+
+          <article class="project-card">
+            <button
+              class="project-hit"
+              type="button"
+              data-project="p3"
+              aria-haspopup="dialog"
+              aria-label="查看夜晚草地图项目 / Open the night meadow project"
+            ></button>
+            <div class="project-top">
+              <span class="project-number">PROJECT / 03</span>
+              <span class="project-status">
+                <span class="lang-zh">已完成</span>
+                <span class="lang-en-text">Completed</span>
+              </span>
+            </div>
+            <h3>
+              <span class="lang-zh">夜晚草地图 · <span class="nowrap">个人主页实验</span></span>
+              <span class="lang-en-text">Night Meadow · A Portfolio Experiment</span>
+            </h3>
+            <p class="project-summary">
+              <span class="lang-zh">
+                把个人主页藏进一张可以点击的夜晚插画里：星星打开项目，角色与草地连接不同区块。
+              </span>
+              <span class="lang-en-text">
+                A personal homepage hidden inside a clickable night illustration: stars open projects,
+                while the characters and grass lead to different sections.
+              </span>
+            </p>
+            <ul class="tag-list" aria-label="项目标签 / Project tags">
+              <li class="tag">SVG</li>
+              <li class="tag">
+                <span class="lang-zh">单文件</span>
+                <span class="lang-en-text">Single file</span>
+              </li>
+              <li class="tag">
+                <span class="lang-zh">交互设计</span>
+                <span class="lang-en-text">Interaction</span>
+              </li>
+            </ul>
+            <span class="project-open">
+              <span class="lang-zh">查看详情</span>
+              <span class="lang-en-text">View details</span>
+            </span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         Interests
+         ========================================================== -->
+    <section class="section interests" id="interests" aria-labelledby="interests-title">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">
+              <span class="kicker-star">✦</span>
+              <span>03</span>
+              <span class="lang-zh">兴趣</span>
+              <span class="lang-en-text">Interests</span>
+              <span class="kicker-line" aria-hidden="true"></span>
+            </p>
+            <h2 id="interests-title">
+              <span class="lang-zh">屏幕之外，收集一些小小的快乐。</span>
+              <span class="lang-en-text">Off-screen, collecting small joys.</span>
+            </h2>
+          </div>
+          <p class="section-note">
+            <span class="lang-zh">四件让我充电的小事，也欢迎和我聊聊它们。</span>
+            <span class="lang-en-text">Four little things that recharge me—always happy to talk about them.</span>
+          </p>
+        </div>
+
+        <div class="interest-grid">
+          <article class="interest-card interest-card--sun">
+            <span class="interest-icon" aria-hidden="true">⚽</span>
+            <h3>
+              <span class="lang-zh">足球</span>
+              <span class="lang-en-text">Football</span>
+            </h3>
+            <p>
+              <span class="lang-zh">周末约球，享受团队配合和跑动后的畅快。</span>
+              <span class="lang-en-text">Weekend matches—teamwork, movement, and the joy of a good run.</span>
+            </p>
+            <span class="interest-meta">WEEKEND MATCHES</span>
+          </article>
+
+          <article class="interest-card interest-card--sky">
+            <span class="interest-icon" aria-hidden="true">📺</span>
+            <h3>
+              <span class="lang-zh">看番</span>
+              <span class="lang-en-text">Anime</span>
+            </h3>
+            <p>
+              <span class="lang-zh">追新番，也补老番，喜欢有想象力的世界观。</span>
+              <span class="lang-en-text">New seasons and old favorites, especially stories with bold worldbuilding.</span>
+            </p>
+            <span class="interest-meta">STORIES &amp; WORLDS</span>
+          </article>
+
+          <article class="interest-card interest-card--rose">
+            <span class="interest-icon" aria-hidden="true">🛠️</span>
+            <h3>
+              <span class="lang-zh">开源复现</span>
+              <span class="lang-en-text">Open-source Making</span>
+            </h3>
+            <p>
+              <span class="lang-zh">看到一个有趣的项目，就想亲手复刻一遍。</span>
+              <span class="lang-en-text">When a project catches my eye, I want to rebuild it by hand.</span>
+            </p>
+            <span class="interest-meta">LEARN BY MAKING</span>
+          </article>
+
+          <article class="interest-card interest-card--mint">
+            <span class="interest-icon" aria-hidden="true">📷</span>
+            <h3>
+              <span class="lang-zh">摄影 / 视频</span>
+              <span class="lang-en-text">Photo &amp; Video</span>
+            </h3>
+            <p>
+              <span class="lang-zh">把日常拍下来，再把片段剪成完整的故事。</span>
+              <span class="lang-en-text">Capturing daily life, then cutting the clips into a complete story.</span>
+            </p>
+            <span class="interest-meta">LIGHT &amp; MOMENTS</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         Contact
+         ========================================================== -->
+    <section class="section contact" id="contact" aria-labelledby="contact-title">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">
+              <span class="kicker-star">✦</span>
+              <span>04</span>
+              <span class="lang-zh">联系</span>
+              <span class="lang-en-text">Contact</span>
+              <span class="kicker-line" aria-hidden="true"></span>
+            </p>
+            <h2 id="contact-title">
+              <span class="lang-zh">一起看看星星，或者聊聊代码。</span>
+              <span class="lang-en-text">Let's watch the stars, or talk code.</span>
+            </h2>
+          </div>
+          <p class="section-note">
+            <span class="lang-zh">合作、交流、约球都欢迎，看到消息后会尽快回复。</span>
+            <span class="lang-en-text">Collaboration, questions, or a match invite—all welcome. I'll reply as soon as I can.</span>
+          </p>
+        </div>
+
+        <div class="contact-grid">
+          <!-- 【待填】邮箱：替换 mailto 和显示文字 -->
+          <a class="contact-card" href="mailto:【待填】">
+            <span class="contact-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="14" rx="2.5"></rect>
+                <path d="m4 7 8 6 8-6"></path>
+              </svg>
+            </span>
+            <span class="contact-body">
+              <span class="contact-label">
+                <span class="lang-zh">邮箱</span>
+                <span class="lang-en-text">Email</span>
+              </span>
+              <span class="contact-value">【待填】</span>
+              <span class="contact-action">
+                <span class="lang-zh">发送邮件</span>
+                <span class="lang-en-text">Send an email</span>
+              </span>
+            </span>
+          </a>
+
+          <!-- 【待填】GitHub：替换 href 和显示文字 -->
+          <a class="contact-card" href="【待填】" target="_blank" rel="noopener noreferrer">
+            <span class="contact-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.92.58.11.79-.25.79-.56v-2.17c-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.23-1.28-5.23-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.08 0 4.41-2.69 5.38-5.25 5.67.41.35.78 1.05.78 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"></path>
+              </svg>
+            </span>
+            <span class="contact-body">
+              <span class="contact-label">GitHub</span>
+              <span class="contact-value">【待填】</span>
+              <span class="contact-action">
+                <span class="lang-zh">打开主页</span>
+                <span class="lang-en-text">Open profile</span>
+              </span>
+            </span>
+          </a>
+
+          <!-- 【待填】B站：替换 href 和显示文字 -->
+          <a class="contact-card" href="【待填】" target="_blank" rel="noopener noreferrer">
+            <span class="contact-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="6" width="18" height="13" rx="3"></rect>
+                <path d="m8 3 4 3 4-3M9 11v3M15 11v3"></path>
+              </svg>
+            </span>
+            <span class="contact-body">
+              <span class="contact-label">
+                <span class="lang-zh">B站</span>
+                <span class="lang-en-text">Bilibili</span>
+              </span>
+              <span class="contact-value">【待填】</span>
+              <span class="contact-action">
+                <span class="lang-zh">打开空间</span>
+                <span class="lang-en-text">Open channel</span>
+              </span>
+            </span>
+          </a>
+        </div>
+
+        <div class="wechat-row">
+          <div class="wechat-card">
+            <!-- 【待填】微信二维码：可整体替换为 <img class="qr-image" src="wechat-qr.png" alt="微信二维码"> -->
+            <div class="qr-placeholder" role="img" aria-label="微信二维码占位，待替换 / WeChat QR code placeholder">
+              <svg class="qr-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                <path d="M14 14h3v3h-3zM20 14h1M14 20h1M18 18h3v3h-3z"></path>
+              </svg>
+              <span class="qr-title">
+                <span class="lang-zh">微信二维码</span>
+                <span class="lang-en-text">WeChat QR code</span>
+              </span>
+              <span class="qr-sub">
+                <span class="lang-zh">（替换为图片）</span>
+                <span class="lang-en-text">(replace with image)</span>
+              </span>
+              <span class="qr-tag">【待填】</span>
+            </div>
+            <div class="wechat-copy">
+              <p class="kicker">
+                <span class="kicker-star">WX</span>
+                <span class="lang-zh">微信</span>
+                <span class="lang-en-text">WeChat</span>
+              </p>
+              <h3>
+                <span class="lang-zh">扫码添加我</span>
+                <span class="lang-en-text">Scan to connect</span>
+              </h3>
+              <p>
+                <span class="lang-zh">交流项目、技术问题，或者约一场球。</span>
+                <span class="lang-en-text">Talk projects, technical questions, or set up a match.</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================================================
+       Footer
+       ============================================================ -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="footer-star" aria-hidden="true">✦</span>
+        <span class="footer-name">
+          <span class="lang-zh">【待填】</span>
+          <span class="lang-en-text">【待填】</span>
+        </span>
+      </div>
+      <div class="footer-copy">
+        <p>
+          © <span id="year">2026</span>
+          <span class="lang-zh">【待填】 · 保留所有权利</span>
+          <span class="lang-en-text">【待填】 · All rights reserved</span>
+        </p>
+        <p>
+          <span class="lang-zh">在星空下制作</span>
+          <span class="lang-en-text">Made under the stars</span>
+          <span aria-hidden="true"> · </span>
+          <a href="#top">
+            <span class="lang-zh">回到星空 ↑</span>
+            <span class="lang-en-text">Back to the sky ↑</span>
+          </a>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============================================================
+       项目详情弹窗
+       ============================================================ -->
+  <dialog class="project-dialog" id="projectDialog" aria-labelledby="modalTitle">
+    <div class="modal-panel">
+      <button class="modal-close" id="modalClose" type="button" aria-label="关闭弹窗 / Close dialog" autofocus>×</button>
+
+      <div class="modal-topline">
+        <span class="modal-kicker" id="modalKicker">PROJECT / 01</span>
+        <span class="modal-status" id="modalStatus">已完成</span>
+      </div>
+
+      <h2 class="modal-title" id="modalTitle">项目标题</h2>
+      <p class="modal-role" id="modalRole">角色</p>
+      <p class="modal-summary" id="modalSummary">项目简介</p>
+
+      <div class="modal-section">
+        <h3>
+          <span class="lang-zh">我做了什么</span>
+          <span class="lang-en-text">What I did</span>
+        </h3>
+        <ul class="modal-detail-list" id="modalDetails"></ul>
+      </div>
+
+      <ul class="tag-list modal-tags" id="modalTags"></ul>
+      <p class="modal-note" id="modalNote" hidden></p>
+    </div>
+  </dialog>
+
+  <script>
+    /* ============================================================
+       项目数据
+       - 所有弹窗内容都从这里读取
+       - 新增项目：复制一个对象，并同步增加星星 / 卡片按钮的 data-project
+       ============================================================ */
+    var projects = {
+      p1: {
+        number: '01',
+        title: {
+          zh: '数学建模校赛 · 数据分析与建模',
+          en: 'Campus Mathematical Modeling · Data & Modeling'
+        },
+        role: {
+          zh: '建模 + 数据检索',
+          en: 'Modeling + Data Research'
+        },
+        status: {
+          zh: '已完成',
+          en: 'Completed'
+        },
+        summary: {
+          zh: '参加校级数学建模竞赛，负责模型构建与数据检索，使用 MATLAB 进行数据分析与可视化，并完成论文提交。后续参与省赛，获得参与奖。',
+          en: 'Took part in the campus mathematical modeling contest, responsible for model construction and data research. Used MATLAB for data analysis and visualization, completed and submitted the paper, then joined the provincial contest and received a participation award.'
+        },
+        details: {
+          zh: [
+            '梳理赛题并检索相关数据，搭建模型的基本假设与求解思路。',
+            '使用 MATLAB 完成数据处理、可视化与结果分析。',
+            '完成论文撰写与提交，后续参与省赛并获得参与奖。'
+          ],
+          en: [
+            'Organized the problem, researched supporting data, and built the assumptions and solution path for the model.',
+            'Used MATLAB for data processing, visualization, and result analysis.',
+            'Completed and submitted the paper, then joined the provincial contest and received a participation award.'
+          ]
+        },
+        tags: [
+          { zh: 'MATLAB', en: 'MATLAB' },
+          { zh: '数据分析', en: 'Data Analysis' },
+          { zh: '数学建模', en: 'Mathematical Modeling' },
+          { zh: '省赛参与奖', en: 'Provincial Participation Award' }
+        ],
+        note: {
+          zh: '',
+          en: ''
+        }
+      },
+
+      p2: {
+        number: '02',
+        title: {
+          zh: '开源项目复现',
+          en: 'Open-source Replication'
+        },
+        role: {
+          zh: '独立复现',
+          en: 'Independent Replication'
+        },
+        status: {
+          zh: '进行中',
+          en: 'Ongoing'
+        },
+        summary: {
+          zh: '喜欢复现网上的开源项目，通过动手实践加深对硬件和代码的理解。从教程里的电路和代码开始，逐步做出可以运行的小原型。',
+          en: 'I enjoy rebuilding open-source projects from the community, deepening my understanding of hardware and code through hands-on practice—starting from tutorial circuits and code, then making small prototypes that actually run.'
+        },
+        details: {
+          zh: [
+            '阅读开源文档与源码，理解项目的硬件连接和代码结构。',
+            '亲手复刻电路与程序，在调试中记录问题和修改方案。',
+            '具体项目与成果持续补充，欢迎推荐值得复现的项目。'
+          ],
+          en: [
+            'Read open-source docs and source code to understand the hardware setup and code structure.',
+            'Rebuilt circuits and programs by hand, recording problems and fixes during debugging.',
+            'More projects and results are on the way—recommendations for interesting projects are welcome.'
+          ]
+        },
+        tags: [
+          { zh: 'Arduino', en: 'Arduino' },
+          { zh: 'C/C++', en: 'C/C++' },
+          { zh: '开源社区', en: 'Open-source Community' }
+        ],
+        note: {
+          zh: '这是一个持续更新的方向，具体项目会陆续补充。',
+          en: 'This is an ongoing direction; more specific projects will be added over time.'
+        }
+      },
+
+      p3: {
+        number: '03',
+        title: {
+          zh: '夜晚草地图 · 个人主页实验',
+          en: 'Night Meadow · A Portfolio Experiment'
+        },
+        role: {
+          zh: '概念 · 视觉 · 前端',
+          en: 'Concept · Visual · Front-end'
+        },
+        status: {
+          zh: '已完成',
+          en: 'Completed'
+        },
+        summary: {
+          zh: '把个人主页藏进一张可以点击的夜晚插画里：星星打开项目，女孩、小狗与草地分别连接不同区块。整个页面由单个 HTML 文件实现。',
+          en: 'A personal homepage hidden inside a clickable night illustration: stars open projects, while the girl, dog, and grass connect to different sections. The whole page lives in a single HTML file.'
+        },
+        details: {
+          zh: [
+            '手写 SVG 绘制夜晚草地、小女孩、黄色小狗与星空。',
+            '用百分比定位透明热区，让点击区域跟随插画缩放。',
+            '使用原生 JavaScript 管理项目数据和双语弹窗，无外部依赖。'
+          ],
+          en: [
+            'Hand-drew the night meadow, girl, yellow dog, and starry sky in SVG.',
+            'Used percentage-positioned hotspots so the clickable areas scale with the illustration.',
+            'Managed project data and bilingual dialogs with vanilla JavaScript, with zero external dependencies.'
+          ]
+        },
+        tags: [
+          { zh: 'SVG', en: 'SVG' },
+          { zh: '单文件', en: 'Single File' },
+          { zh: '交互设计', en: 'Interaction Design' }
+        ],
+        note: {
+          zh: '如果喜欢这个方向，欢迎交流，也欢迎把它改成你自己的星空。',
+          en: 'If you like this direction, let’s talk—or turn it into your own sky.'
+        }
+      }
+    };
+
+    (function () {
+      'use strict';
+
+      var body = document.body;
+      var html = document.documentElement;
+      var langToggle = document.getElementById('langToggle');
+      var langLabel = document.getElementById('langLabel');
+      var dialog = document.getElementById('projectDialog');
+      var modalClose = document.getElementById('modalClose');
+      var modalKicker = document.getElementById('modalKicker');
+      var modalStatus = document.getElementById('modalStatus');
+      var modalTitle = document.getElementById('modalTitle');
+      var modalRole = document.getElementById('modalRole');
+      var modalSummary = document.getElementById('modalSummary');
+      var modalDetails = document.getElementById('modalDetails');
+      var modalTags = document.getElementById('modalTags');
+      var modalNote = document.getElementById('modalNote');
+      var activeProjectId = null;
+      var projectTriggers = Array.prototype.slice.call(document.querySelectorAll('[data-project]'));
+
+      /* ---------- 语言 ---------- */
+      function getLanguage() {
+        return body.classList.contains('lang-en') ? 'en' : 'zh';
+      }
+
+      function pickText(value) {
+        if (typeof value === 'string') return value;
+        return value[getLanguage()] || value.zh;
+      }
+
+      function syncLanguageUI() {
+        var isEnglish = getLanguage() === 'en';
+        html.lang = isEnglish ? 'en' : 'zh-CN';
+        langLabel.textContent = isEnglish ? '中文' : 'EN';
+
+        var nextLabel = isEnglish
+          ? '切换为中文 / Switch to Chinese'
+          : '切换为英文 / Switch to English';
+        langToggle.setAttribute('aria-label', nextLabel);
+        langToggle.setAttribute('title', nextLabel);
+
+        document.title = isEnglish
+          ? 'Hello Friends! | Portfolio Under the Stars'
+          : 'Hello Friends! | 星空下的个人主页';
+      }
+
+      function updateProjectLabels() {
+        var language = getLanguage();
+        projectTriggers.forEach(function (trigger) {
+          var project = projects[trigger.getAttribute('data-project')];
+          if (!project) return;
+
+          var prefix = language === 'en' ? 'Open project: ' : '查看项目：';
+          trigger.setAttribute('aria-label', prefix + pickText(project.title));
+        });
+      }
+
+      function setLanguage(language, persist) {
+        body.classList.toggle('lang-en', language === 'en');
+        syncLanguageUI();
+        updateProjectLabels();
+
+        if (dialog.open && activeProjectId) {
+          renderModal(activeProjectId);
+        }
+
+        if (persist) {
+          try {
+            localStorage.setItem('night-portfolio-lang', language);
+          } catch (error) {
+            /* 存储不可用时仍允许本次切换 */
+          }
+        }
+      }
+
+      syncLanguageUI();
+      updateProjectLabels();
+
+      langToggle.addEventListener('click', function () {
+        setLanguage(getLanguage() === 'zh' ? 'en' : 'zh', true);
+      });
+
+      /* ---------- 项目弹窗 ---------- */
+      function renderModal(projectId) {
+        var project = projects[projectId];
+        if (!project) return;
+
+        var language = getLanguage();
+        modalKicker.textContent = 'PROJECT / ' + project.number;
+        modalStatus.textContent = pickText(project.status);
+        modalTitle.textContent = pickText(project.title);
+        modalRole.textContent = pickText(project.role);
+        modalSummary.textContent = pickText(project.summary);
+
+        modalDetails.textContent = '';
+        (project.details[language] || project.details.zh).forEach(function (text) {
+          var item = document.createElement('li');
+          item.textContent = text;
+          modalDetails.appendChild(item);
+        });
+
+        modalTags.textContent = '';
+        project.tags.forEach(function (tag) {
+          var item = document.createElement('li');
+          item.className = 'tag';
+          item.textContent = pickText(tag);
+          modalTags.appendChild(item);
+        });
+
+        var note = project.note ? pickText(project.note) : '';
+        if (note) {
+          modalNote.hidden = false;
+          modalNote.textContent = note;
+        } else {
+          modalNote.hidden = true;
+          modalNote.textContent = '';
+        }
+      }
+
+      function openProject(projectId) {
+        if (!projects[projectId]) return;
+
+        activeProjectId = projectId;
+        renderModal(projectId);
+        body.classList.add('modal-open');
+
+        if (typeof dialog.showModal === 'function') {
+          dialog.showModal();
+        } else {
+          dialog.setAttribute('open', '');
+        }
+
+        modalClose.focus();
+      }
+
+      function closeProject() {
+        if (typeof dialog.close === 'function') {
+          dialog.close();
+        } else {
+          dialog.removeAttribute('open');
+        }
+        body.classList.remove('modal-open');
+        activeProjectId = null;
+      }
+
+      document.addEventListener('click', function (event) {
+        var trigger = event.target.closest('[data-project]');
+        if (!trigger) return;
+
+        event.preventDefault();
+        openProject(trigger.getAttribute('data-project'));
+      });
+
+      modalClose.addEventListener('click', closeProject);
+
+      dialog.addEventListener('click', function (event) {
+        var rect = dialog.getBoundingClientRect();
+        var clickedOutside =
+          event.clientX < rect.left ||
+          event.clientX > rect.right ||
+          event.clientY < rect.top ||
+          event.clientY > rect.bottom;
+
+        if (clickedOutside) closeProject();
+      });
+
+      dialog.addEventListener('close', function () {
+        body.classList.remove('modal-open');
+        activeProjectId = null;
+      });
+
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && dialog.open) {
+          closeProject();
+        }
+      });
+
+      /* ---------- 页脚年份 ---------- */
+      var yearNode = document.getElementById('year');
+      if (yearNode) {
+        yearNode.textContent = String(new Date().getFullYear());
+      }
+    })();
+  </script>
+</body>
+</html>
